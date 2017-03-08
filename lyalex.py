@@ -32,9 +32,29 @@ reserved = {
         'loc': 'LOC',
         'type': 'TYPE',
         'od': 'OD',
-        'proc': 'PROC', REF, RESULT, RETURN, RETURNS,
-        SYN, THEN, TO, WHILE, ABS, ASC, BOOL, CHAR, FALSE, INT, LENGTH, LOWER, NULL, NUM,
-        PRINT, READ, TRUE, UPPER
+        'proc': 'PROC',
+        'ref': 'REF', 
+        'result': 'RESULT',
+        'return': 'RETURN',
+        'returns': 'RETURNS',
+        'syn': 'SYN',
+        'then': 'THEN',
+        'to': 'TO',
+        'while': 'WHILE',
+        'abs': 'ABS', 
+        'asc': 'ASC',
+        'bool': 'BOOL',
+        'char': 'CHAR',
+        'false': 'FALSE',
+        'int': 'INT',
+        'length': 'LENGTH',
+        'lower': 'LOWER',
+        'null': 'NULL',
+        'num': 'NUM',
+        'print': 'PRINT',
+        'read': 'READ',
+        'true': 'TRUE',
+        'upper': 'UPPER'
 }
 
 # Regular expression rules for simple tokens
