@@ -16,6 +16,8 @@ tokens = [
         'LE',
         'CONCAT',
         'ICONST',
+        'SCONST',
+        'CCONST',
         'PLUS',
         'MINUS',
         'NOT',
@@ -123,11 +125,11 @@ def t_ICONST(t):
     return t
 
 def t_SCONST(t):
-
+    r'\"([^"\\]|\\.)*\"'
+    return t
 
 def t_CCONST(t):
-    r'\'[\s\S]\''
-    t.value = t.value[1]
+    r"\'([^']|\\.)\'"
     return t
 
 # Define a rule so we can track line numbers
@@ -154,17 +156,20 @@ lexer = lex.lex()
 
 # Test it out
 data = '''
+/* Compute the fatorial of an integer */
 
- int;
- 
- read(m,n);
- s = 0;
- do while m <= n;
-   s += m * n;
-     print(m,s);
-       m += 1;
-       od;
-       
+fat: proc (n int) returns (int);
+  if n==0 then
+    return 1;
+  else
+    return n * fat (n-1);
+  fi;
+end;
+
+dcl x int;
+print("give-me a positive integer:");
+read(x);
+print("fatorial of ", x, " = ", fat(x));
 '''
 
 # Give the lexer some input
