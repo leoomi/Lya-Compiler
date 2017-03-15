@@ -36,7 +36,7 @@ tokens = [
         'MINUSEQ',
         'TIMESEQ',
         'DIVIDEEQ',
-        'CONCATEQ',
+        'CONCATEQ', 
         'ID'
 ]
 
@@ -125,7 +125,7 @@ def t_ICONST(t):
     return t
 
 def t_SCONST(t):
-    r'\"([^"\\]|\\.)*\"'
+    r'\"([^"\\\n]|\\.)*\"'
     return t
 
 def t_CCONST(t):
@@ -146,6 +146,16 @@ def t_ID(t):
 # A string containing ignored characters (spaces and tabs)
 t_ignore  = ' \t'
 
+def t_unterminatedString(t):
+    r'\".*'
+    print("%d: Unterminated string" % t.lineno);
+    pass
+
+def t_unterminatedComment(t):
+    r'/\*[\s\S]*$'
+    print("%d: Unterminated comment" % t.lineno);
+    pass
+
 # Error handling rule
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
@@ -153,7 +163,7 @@ def t_error(t):
 
 # Build the lexer
 lexer = lex.lex()
-
+"""
 # Test it out
 data = '''
 /* Compute the fatorial of an integer */
@@ -164,12 +174,11 @@ fat: proc (n int) returns (int);
   else
     return n * fat (n-1);
   fi;
-end;
-
+end;/*
 dcl x int;
-print("give-me a positive integer:");
+print("give-me a positive integer:);
 read(x);
-print("fatorial of ", x, " = ", fat(x));
+print("fatorial of" , x, " = ", fat(x));
 '''
 
 # Give the lexer some input
@@ -181,3 +190,4 @@ while True:
     if not tok: 
         break      # No more input
     print(tok)
+"""
