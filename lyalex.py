@@ -2,9 +2,11 @@
 # lyalex.py
 # ------------------------------------------------------------
 import ply.lex as lex
+import sys
 
-# List of token names.   This is always required
-tokens = [
+class Lyalex:
+    # List of token names.   This is always required
+    tokens = [
         'ASSIGN',
         'AND',
         'OR',
@@ -38,9 +40,9 @@ tokens = [
         'DIVIDEEQ',
         'CONCATEQ', 
         'ID'
-]
+    ]
 
-reserved = {
+    reserved = {
         'array': 'ARRAY',
         'by': 'BY',
         'chars': 'CHARS', 
@@ -81,88 +83,89 @@ reserved = {
         'read': 'READ',
         'true': 'TRUE',
         'upper': 'UPPER'
-}
+    }
 
-tokens += list(reserved.values())
+    # Regular expression rules for simple tokens
+    t_PLUS    = r'\+'
+    t_MINUS   = r'-'
+    t_TIMES   = r'\*'
+    t_DIVIDE  = r'/'
+    t_LPAREN  = r'\('
+    t_RPAREN  = r'\)'
+    t_COMMA = r','
+    t_SEMICOL = r';'
+    t_ASSIGN = r'='
+    t_NOT = r'\!'
+    t_MOD = r'\%'
+    t_CONCAT = r'&'
+    t_AND = r'&&'
+    t_OR = r'\|\|'
+    t_EQUALS = r'=='
+    t_DIFF = r'\!='
+    t_GT = r'>'
+    t_GE = r'>='
+    t_LS = r'<'
+    t_LE = r'<='
+    t_LBRACKET = r'\['
+    t_RBRACKET = r'\]'
+    t_COLON = r':'
+    t_PLUSEQ = r'\+='
+    t_MINUSEQ = r'\-='
+    t_TIMESEQ = r'\*='
+    t_DIVIDEEQ = r'/='
+    t_CONCATEQ = r'&='
 
-# Regular expression rules for simple tokens
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_LPAREN  = r'\('
-t_RPAREN  = r'\)'
-t_COMMA = r','
-t_SEMICOL = r';'
-t_ASSIGN = r'='
-t_NOT = r'\!'
-t_MOD = r'\%'
-t_CONCAT = r'&'
-t_AND = r'&&'
-t_OR = r'\|\|'
-t_EQUALS = r'=='
-t_DIFF = r'\!='
-t_GT = r'>'
-t_GE = r'>='
-t_LS = r'<'
-t_LE = r'<='
-t_LBRACKET = r'\['
-t_RBRACKET = r'\]'
-t_COLON = r':'
-t_PLUSEQ = r'\+='
-t_MINUSEQ = r'\-='
-t_TIMESEQ = r'\*='
-t_DIVIDEEQ = r'/='
-t_CONCATEQ = r'&='
+    def t_COMMENT(self, t):
+        r'(/\*[\s\S]*\*/)|(//.*)'
+        pass
 
-def t_COMMENT(t):
-    r'(/\*[\s\S]*\*/)|(//.*)'
-    pass
+    def t_ICONST(self, t):
+        r'\d+'
+        t.value = int(t.value)                    
+        return t
 
-def t_ICONST(t):
-    r'\d+'
-    t.value = int(t.value)                    
-    return t
+    def t_SCONST(self, t):
+        r'\"([^"\\\n]|\\.)*\"'
+        return t
 
-def t_SCONST(t):
-    r'\"([^"\\\n]|\\.)*\"'
-    return t
+    def t_CCONST(self, t):
+        r"\'([^']|\\.)\'"
+        return t
 
-def t_CCONST(t):
-    r"\'([^']|\\.)\'"
-    return t
+    # Define a rule so we can track line numbers
+    def t_newline(self, t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
 
-# Define a rule so we can track line numbers
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+    # Rule for handling identifiers (and possibly reserved words) 
+    def t_ID(self, t):
+        r'[a-zA-Z_][a-zA-Z_0-9]*'
+        t.type = self.reserved.get(t.value,'ID')    # Check for reserved words
+        return t
 
-# Rule for handling identifiers (and possibly reserved words) 
-def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved.get(t.value,'ID')    # Check for reserved words
-    return t
+    # A string containing ignored characters (spaces and tabs)
+    t_ignore  = ' \t'
 
-# A string containing ignored characters (spaces and tabs)
-t_ignore  = ' \t'
+    def t_unterminatedString(self, t):
+        r'\".*'
+        print("%d: Unterminated string" % t.lineno);
+        pass
 
-def t_unterminatedString(t):
-    r'\".*'
-    print("%d: Unterminated string" % t.lineno);
-    pass
+    def t_unterminatedComment(self, t):
+        r'/\*[\s\S]*$'
+        print("%d: Unterminated comment" % t.lineno);
+        pass
 
-def t_unterminatedComment(t):
-    r'/\*[\s\S]*$'
-    print("%d: Unterminated comment" % t.lineno);
-    pass
+    # Error handling rule
+    def t_error(self, t):
+        print("Illegal character '%s'" % t.value[0])
+        t.lexer.skip(1)
 
-# Error handling rule
-def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
-    t.lexer.skip(1)
+    def build(self, **kwargs):
+        self.lexer = lex.lex(object=self,**kwargs)
 
-# Build the lexer
-lexer = lex.lex()
+    def __init__(self):
+        self.tokens += list(self.reserved.values())
 """
 # Test it out
 data = '''
@@ -180,14 +183,26 @@ print("give-me a positive integer:);
 read(x);
 print("fatorial of" , x, " = ", fat(x));
 '''
-
-# Give the lexer some input
-lexer.input(data)
-
-# Tokenize
-while True:
-    tok = lexer.token()
-    if not tok: 
-        break      # No more input
-    print(tok)
 """
+def main():
+    # Open file
+    file = sys.argv[1]
+    data = open(file)
+
+    lya = Lyalex()
+    # Build the lexer
+    lexer = lex.lex(object=lya)
+
+    # Give the lexer some input
+    lexer.input(data.read())
+
+    # Tokenize
+    while True:
+        tok = lexer.token()
+        if not tok: 
+            break      # No more input
+        print(tok)
+        
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
