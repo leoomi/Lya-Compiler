@@ -2,6 +2,7 @@
 # lyalex.py
 # ------------------------------------------------------------
 import ply.lex as lex
+import sys
 
 # List of token names.   This is always required
 tokens = [
@@ -161,8 +162,6 @@ def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-# Build the lexer
-lexer = lex.lex()
 """
 # Test it out
 data = '''
@@ -180,14 +179,25 @@ print("give-me a positive integer:);
 read(x);
 print("fatorial of" , x, " = ", fat(x));
 '''
-
-# Give the lexer some input
-lexer.input(data)
-
-# Tokenize
-while True:
-    tok = lexer.token()
-    if not tok: 
-        break      # No more input
-    print(tok)
 """
+def main():
+    # Open file
+    file = sys.argv[1]
+    data = open(file)
+
+    # Build the lexer
+    lexer = lex.lex()
+
+    # Give the lexer some input
+    lexer.input(data.read())
+
+    # Tokenize
+    while True:
+        tok = lexer.token()
+        if not tok: 
+            break      # No more input
+        print(tok)
+        
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
