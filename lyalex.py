@@ -183,7 +183,6 @@ print("give-me a positive integer:);
 read(x);
 print("fatorial of" , x, " = ", fat(x));
 '''
-"""
 def main():
     # Open file
     file = sys.argv[1]
@@ -206,3 +205,4 @@ def main():
 if __name__ == "__main__":
     # execute only if run as a script
     main()
+"""

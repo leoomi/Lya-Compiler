@@ -3,13 +3,21 @@
 import ply.yacc as yacc
 
 # Get the token map from the lexer.  This is required.
-from lyalex import tokens
+from lyalex import Lyalex
+
+tokens = Lyalex().tokens
 
 class Declaration:
     def __init__(self, identifier_list, mode, value=0):
         self.identifier_list = identifier_list
         self.mode = mode
         self.value = value
+
+class Synonym_definition:
+    def __init__(self, identifier_list, constant_expression, mode=0):
+        self.identifier_list = identifier_list
+        self.mode = mode
+        self.constant_expression = constant_expression
 
 def p_program(p):
     'program : statement_list'
@@ -80,9 +88,9 @@ def p_synonym_definition(p):
     '''synonym_definition : identifier_list ASSIGN expression
                           | identifier_list mode ASSIGN expression'''
     if(len(p) == 4):
-        p[0] = (p[1],p[3])
+        p[0] = Synonym_definition(p[1],p[3])
     else:
-        p[0] = (p[1],p[4],p[2])
+        p[0] = Synonym_definition(p[1],p[4],p[2])
 
 
 
