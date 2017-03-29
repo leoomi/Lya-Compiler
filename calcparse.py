@@ -233,6 +233,90 @@ def string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
     p[0] = (p[1],p[3])
 
+def p_start_element(p):
+    '''start_element : integer_expression'''
+    p[0] = p[1]
+
+def p_string_slice(p):
+    '''string_slice : string_location LBRACKET left_element COLON right_element RBRACKET'''
+    p[0] = (p[1], p[3], p[5])
+
+def p_string_location(p):
+    '''string_location : identifier'''
+    p[0] = p[1]
+
+def p_left_element(p):
+    '''left_element : integer_expression'''
+    p[0] = p[1]
+
+def p_right_element(p):
+    '''right_element : integer_expression'''
+    p[0] = p[1]
+
+def p_array_element(p):
+    '''array_element : array_location LBRACKET expression_list RBRACKET'''
+    p[0] = (p[1], p[3])
+
+def p_expression_list(p):
+    '''expression_list : expression
+                       | expression_list COMMA expression'''
+    if(len(p) == 2):
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_array_slice(p):
+    '''array_slice : array_location LBRACKET lower_bound COLON upper_bound RBRACKET'''
+    p[0] = (p[1], p[3], p[5])
+
+def p_array_location(p):
+    '''array_location : location'''
+    p[0] = p[1]
+
+def p_primitive_value(p):
+    '''primitive_value : literal
+                       | value_array_element
+                       | value_array_slice
+                       | parenthesized_expression'''
+    p[0] = p[1]
+
+def p_literal(p):
+    '''literal : integer_literal
+               | boolean_literal
+               | character_literal
+               | empty_literal
+               | character_string_literal'''
+    p[0] = p[1]
+
+def p_integer_literal(p):
+    '''integer_literal :  ICONST'''
+    p[0] = p[1]
+
+def p_boolean_literal(p):
+    '''boolean_literal : FALSE 
+                       | TRUE'''
+    p[0] = p[1]
+
+def p_character_literal(p):
+    '''character_literal : CCONST
+                         | APOSTH CARET LPAREN ICONST RPAREN APOSTH'''
+    if(len(p) == 2):
+        p[0] = p[1]
+    else:
+        p[0] = p[4]
+
+def empty_literal(p):
+    '''empty_literal : NULL'''
+    p[0] = p[1]
+
+def character_string_literal(p):
+    '''character_string_literal : SCONST'''
+    p[0] = p[1]
+
+
+#CONTINUE FROM HERE ROGER!
+
+
 def p_procedure_definition(p):
     '''procedure_definition : PROC RPAREN LPAREN SEMICOL END
                             | PROC RPAREN formal_parameter_list '''

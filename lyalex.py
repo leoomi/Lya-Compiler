@@ -115,7 +115,9 @@ class Lyalex:
     t_TIMESEQ = r'\*='
     t_DIVIDEEQ = r'/='
     t_CONCATEQ = r'&='
-    T_ARROW = r'->'
+    t_ARROW = r'->'
+    t_APOSTH = r'\''
+    t_CARET = r'\^'
 
     def t_COMMENT(self, t):
         r'(/\*[\s\S]*\*/)|(//.*)'
