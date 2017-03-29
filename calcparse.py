@@ -8,13 +8,13 @@ from lyalex import Lyalex
 tokens = Lyalex().tokens
 
 class Declaration:
-    def __init__(self, identifier_list, mode, value=0):
+    def __init__(self, identifier_list, mode, value=None):
         self.identifier_list = identifier_list
         self.mode = mode
         self.value = value
 
 class Synonym_definition:
-    def __init__(self, identifier_list, constant_expression, mode=0):
+    def __init__(self, identifier_list, constant_expression, mode=None):
         self.identifier_list = identifier_list
         self.mode = mode
         self.constant_expression = constant_expression
@@ -23,6 +23,16 @@ class Mode_definition:
     def __init__(self, identifier_list, mode):
         self.identifier_list = identifier_list
         self.mode = mode
+
+class Returns_definition:
+    def __init__(self, mode, result_attribute=None):
+        self.mode = mode;
+        self.result_attribute = result_attribute
+
+class Parameter_spec:
+    def __init__(self, mode, parameter_attribute=None):
+        self.mode = mode
+        self.parameter_attribute = parameter_attribute
 
 def p_program(p):
     'program : statement_list'
@@ -223,6 +233,46 @@ def string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
     p[0] = (p[1],p[3])
 
+def p_procedure_definition(p):
+    '''procedure_definition : PROC RPAREN LPAREN SEMICOL END
+                            | PROC RPAREN formal_parameter_list '''
+        
+def p_formal_parameter_list(p):
+    '''formal_parameter_list : formal_parameter
+                             | formal_paramenter_list COMMA formal_parameter'''
+    if(len(p) == 2):
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+        
+def p_formal_parameter(p):
+    '''formal_parameter : identifier_list parameter_spec'''
+    p[0] = (p[1], p[2])
+        
+def p_paremeter_spec(p):
+    '''parameter_spec : mode
+                      | mode parameter_attribute'''
+    if(len(p) == 2):
+        p[0] = Parameter_spec(p[1])
+    else:
+        p[0] = Parameter_spec(p[1], p[2])
+        
+def p_paremeter_attribute(p):
+    '''parameter_attribute : LOC'''
+    p[0] = p[1]
+
+def p_returns_definition(p):
+    '''returns_definition : RETURNS LPAREN mode RPAREN
+                          | RETURNS LPAREN mode result_attribute RPAREN'''
+    if(len(p) == 5):
+        p[0] = Returns_definition(p[3])
+    else:
+        p[0] = Returns_definition(p[3], p[4])
+
+def p_result_attribute(p):
+    '''result_attribute : LOC'''
+    p[0] = p[1]
+    
 def p_error(p):
     print("Syntax error in input!")
 
