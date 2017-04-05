@@ -52,6 +52,36 @@ class Conditional_expression:
         self.else_expression = else_expression
         self.elsif_expression = elsif_expression
 
+class Procedure_definition:
+    def __init__(self, formal_parameter_list=None, result_spec=None, statement_list=None):
+        self.formal_paremeter = formal_parameter_list
+        self.result_spec = result_spec
+        self.statement_list = statement_list
+
+class Builtin_call:
+    def __init__(self, builtin_name, parameter_list=None):
+        self.builtin_name = builtin_name
+        self.parameter_list = parameter_list
+
+class Procedure_call:
+    def __init__(self, procedure_name, parameter_list=None):
+        self.procedure_name = procedure_name
+        self.parameter_list = parameter_list
+
+class Step_enumeration:
+    def __init__(self, loop_counter, assignment_symbol, start_value, end_value, step_value=None, down=None):
+        self.loop_counter = loop_counter
+        self.assignment_symbol = assignment_symbol
+        self.start_value = start_value
+        self.end_value = end_value
+        self.step_value = step_value
+        self.down = down
+
+class Control_part:
+    def __init__(self, for_control=None, while_control=None):
+        self.for_control = for_control
+        self.for_control = while_control
+        
 def p_program(p):
     'program : statement_list'
     p[0] = p[1]
@@ -367,7 +397,7 @@ def p_boolean_expression(p):
     p[0] = p[1]
 
 def p_then_expression(p):
-    '''then_expression : THEN expression'''
+   '''then_expression : THEN expression'''
     p[0] = p[2]
 
 def p_else_expression(p):
@@ -377,36 +407,187 @@ def p_else_expression(p):
 def elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
-   
 
 
+#LEO VOCE ESCREVE A PARTIR DAQUI
+def p_do_action(p):
+    '''do_action : DO control_part SEMICOLON  '''
 
+def p_control_part(p):
+    '''control_part : for_control while_control
+                    | for_control
+                    | while_control'''
+    if(len(p) == 3):
+        p[0] = Control_part(p[1], p[2])
+    else(len(p) == 2):
+        if(p[1][0] == 'while_control'):
+            p[0] = Control_part(while_control = p[1])
+        else:
+            p[0] = Control_part(for_control = p[1])
 
+def p_for_control(p):
+    '''for_control : FOR iteration'''
+    p[0] = ('for_control', p[2])
 
+def p_interation(p):
+    '''iteration : step_enumeration
+                 | range_enumeration'''
+    p[0] = p[1]
 
+def p_step_enumeration(p):
+    '''step_enumeration : loop_counter assignment_symbol start_value step_value DOWN end_value
+                        | loop_counter assignment_symbol start_value DOWN end_value
+                        | loop_counter assignment_symbol start_value step_value end_value
+                        | loop_counter assignment_symbol start_value end_value'''
+    if(len(p) == 7):
+        p[0] = Step_enumeration(p[1], p[2], p[3], p[6], p[4], p[5])
+    elif(len(p) == 6):
+        if(p[4] == 'DOWN'):
+            p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
+        else:
+            p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
+    elif(len(p) == 5)
+        p[0] = Step_enumeration(p[1], p[2], p[3], p[6])
+    
 
-#CONTINUE FROM HERE ROGER!
+def p_loop_counter(p):
+    '''loop counter : identifier'''
+    p[0] = p[1]
 
+def p_start_value(p):
+    '''start_value : discrete_expression'''
+    p[0] = p[1]
 
+def p_step_value(p):
+    '''step_value : BY integer_expression'''
+    p[0] = p[2]
 
+def p_end_value(p):
+    '''end_value : TO discrete_expression'''
+    p[0] = p[2]
 
+def p_discrete_expression(p):
+    '''discrete_expression :  expression'''
+    p[0] = p[1]
 
+def p_range_enumeration(p):
+    '''range_enumeration : loop_counter IN discrete_mode
+                         | loop_counter DOWN IN discrete_mode'''
+    if(len(p) == 4):
+        p[0] = (p[1], None, discrete_mode)
+    else:
+        p[0] = (p[1], 'DOWN', discrete_mode)
 
+def p_while_control(p):
+    '''while_control : WHILE boolean_expression'''
+    p[0] = ('while_control', p[2])
 
+def p_call_action(p):
+    '''call_action : procedure_call
+                   | builtin_call'''
+    p[0] = p[1]
 
+def p_procedure_call(p):
+    '''procedure_call : procedure_name LPAREN RPAREN
+                      | procedure_name LPAREN parameter_list RPAREN'''
+    if(len(p) == 3):
+        p[0] = Procedure_call(procedure_name)
+    else:
+        p[0] = Procedure_call(procedure_name, parameter_list)
 
+def p_parameter_list(p):
+    '''parameter_list: parameter
+                     | parameter COMMA parameter_list'''
+    if (len(p) == 2):
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
+def p_parameter(p):
+    '''parameter : expression'''
+    p[0] = p[1]
 
+def p_procedure_name(p):
+    '''procedure_name : identifier'''
+    p[0] = p[1]
+    
+def p_exit_action(p):
+    '''exit_action : EXIT label_id'''
+    p[0] = p[2]
+    
+def p_return_action(p):
+    '''return_action : RETURN
+                     | RETURN result'''
+    if(len(p) == 2):
+        p[0] = (p[1], None)
+    else:
+        p[0] = (p[1], p[2])
+    
+def p_result_action(p):
+    '''result_action: RESULT result'''
+    p[0] = p[2]
+    
+def p_result(p):
+    '''result: expression'''
+    p[0] = p[1]
+    
+def p_builtin_call(p):
+    '''builtin_call : builtin_name LPAREN RPAREN
+                    | builtin_name LPAREN parameter_list RPAREN'''
+    if(len(p) == 3):
+        p[0] = Builtin_call(p[1])
+    else:
+        p[0] = Builtin_call(p[1], p[3])
+    
+def p_builtin_name(p):
+    '''builtin_name : ABS
+                    | ASC
+                    | NUM
+                    | UPPER
+                    | LOWER
+                    | LENGTH
+                    | READ
+                    | PRINT'''
 
-
-
+    p[0] = p[1]
+    
+def p_procedure_statement(self, p):
+    '''procedure_statement : label_id COLON procedure_definition SEMICOLON'''
+    p[0] = (p[1], p[3])
+    
 def p_procedure_definition(p):
-    '''procedure_definition : PROC RPAREN LPAREN SEMICOL END
-                            | PROC RPAREN formal_parameter_list '''
+    '''procedure_definition : PROC LPAREN RPAREN SEMICOL END
+                            | PROC LPAREN RPAREN SEMICOL statement_list END
+                            | PROC LPAREN formal_parameter_list RPAREN SEMICOL END
+                            | PROC LPAREN RPAREN result_spec SEMICOL END
+                            | PROC LPAREN RPAREN result_spec SEMICOL statement_list END
+                            | PROC LPAREN formal_parameter_list RPAREN SEMICOL statement_list END
+                            | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL END
+                            | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL statement_list END'''
+    if(len(p) == 8):
+        p[0] = Procedure_definition(p[3], p[5], p[7])
+    elif(len(p) == 7):
+        if(p[3] = 'RPAREN'):
+            p[0] = Procedure_definition(result_spec = p[4], statement_list = p[6])
+        elif(p[5] == 'SEMICOL'):
+            p[0] = Procedure_definition(formal_parameter_list = p[3], statement_list = p[6])
+        else:
+            p[0] = Procedure_definition(formal_parameter_list = p[3], result_spec = p[5])
+    elif(len(p) == 6):
+        if(p[3] == 'RPAREN' and p[5] == 'SEMICOL'):
+            p[0] = Procedure_definition(result_spec = p[4])
+        elif(p[3] == 'RPAREN'):
+            p[0] = Procedure_definition(formal_paramenter_list = p[3])
+        else:
+            p[0] = Procedure_definition(statement_list = p[5])
+    else(len(p) == 5):
+        p[0] = Procedure_definition()
+        
+        
         
 def p_formal_parameter_list(p):
     '''formal_parameter_list : formal_parameter
-                             | formal_paramenter_list COMMA formal_parameter'''
+                             | formal_parameter_list COMMA formal_parameter'''
     if(len(p) == 2):
         p[0] = [p[1]]
     else:
@@ -428,13 +609,13 @@ def p_paremeter_attribute(p):
     '''parameter_attribute : LOC'''
     p[0] = p[1]
 
-def p_returns_definition(p):
-    '''returns_definition : RETURNS LPAREN mode RPAREN
+def p_result_spec(p):
+    '''result_spec : RETURNS LPAREN mode RPAREN
                           | RETURNS LPAREN mode result_attribute RPAREN'''
     if(len(p) == 5):
-        p[0] = Returns_definition(p[3])
+        p[0] = Result_spec(p[3])
     else:
-        p[0] = Returns_definition(p[3], p[4])
+        p[0] = Result_spec(p[3], p[4])
 
 def p_result_attribute(p):
     '''result_attribute : LOC'''
