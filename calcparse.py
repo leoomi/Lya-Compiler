@@ -34,6 +34,24 @@ class Parameter_spec:
         self.mode = mode
         self.parameter_attribute = parameter_attribute
 
+class Value_array_element:
+    def __init__(self, array_primitive_value, expression_list):
+        self.array_primitive_value = array_primitive_value
+        self.expression_list = expression_list
+
+class Value_array_slice:
+    def __init__(self, array_primitive_value, lower_element, upper_element)
+        self.array_primitive_value = array_primitive_value  
+        self.lower_element = lower_element
+        self.upper_element = upper_element 
+
+class Conditional_expression:
+    def __init__(self, boolean_expression, then_expression, else_expression, elsif_expression=None):
+        self.boolean_expression = boolean_expression
+        self.then_expression = then_expression
+        self.else_expression = else_expression
+        self.elsif_expression = elsif_expression
+
 def p_program(p):
     'program : statement_list'
     p[0] = p[1]
@@ -305,16 +323,81 @@ def p_character_literal(p):
     else:
         p[0] = p[4]
 
-def empty_literal(p):
+def p_empty_literal(p):
     '''empty_literal : NULL'''
     p[0] = p[1]
 
-def character_string_literal(p):
+def p_character_string_literal(p):
     '''character_string_literal : SCONST'''
     p[0] = p[1]
 
 
+def p_value_array_element(p):
+    '''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
+    p[0] = Value_array_element(p[1],p[3])
+
+def p_value_array_slice(p):
+    '''value_array_slice : array_primitive_value LBRACKET lower_element COLON upper_element RBRACKET'''
+    p[0] = Value_array_slice(p[1],p[3],p[5])
+
+def p_array_primitive_value(p):
+    '''array_primitive_value : primitive_value'''
+    p[0] = p[1]
+
+def p_parenthesized_expression(p):
+    '''parenthesized_expression : LPAREN <expression> RPAREN'''
+    p[0] = p[2]
+
+def p_expression(p):
+    '''expression : operand0 
+                  | conditional_expression'''
+    p[0] = p[1]
+
+def p_conditional_expression(p):
+    '''conditional_expression : IF boolean_expression then_expression else_expression FI
+                              | IF boolean_expression then_expression elsif_expression else_expression FI'''
+    if(len(p) == 6):
+        p[0] = Conditional_expression(p[2],p[3],p[4])
+    else:
+        p[0] = Conditional_expression(p[2],p[3],p[5],p[4])
+
+
+def p_boolean_expression(p):
+    '''boolean_expression : expression'''
+    p[0] = p[1]
+
+def p_then_expression(p):
+    '''then_expression : THEN expression'''
+    p[0] = p[2]
+
+def p_else_expression(p):
+    '''else_expression : ELSE expression'''
+    p[0] = p[2]
+
+def elsif_expression(p):
+    '''elsif_expression : ELSIF boolean_expression then_expression
+                        | elsif_expression ELSIF boolean_expression then_expression'''
+   
+
+
+
+
+
+
+
 #CONTINUE FROM HERE ROGER!
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def p_procedure_definition(p):
