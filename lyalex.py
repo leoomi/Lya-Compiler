@@ -40,6 +40,8 @@ class Lyalex:
         'DIVIDEEQ',
         'CONCATEQ', 
         'ARROW',
+        'CARET',
+        'APOSTH',
         'ID'
     ]
 

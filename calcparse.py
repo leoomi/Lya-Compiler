@@ -1,6 +1,7 @@
 # Yacc example
 
 import ply.yacc as yacc
+import ply.lex as lex
 
 # Get the token map from the lexer.  This is required.
 from lyalex import Lyalex
@@ -64,8 +65,8 @@ class Builtin_call:
         self.parameter_list = parameter_list
 
 class Procedure_call:
-    def __init__(self, procedure_name, parameter_list=None):
-        self.procedure_name = procedure_name
+    def __init__(self, ID, parameter_list=None):
+        self.ID = ID
         self.parameter_list = parameter_list
 
 class Step_enumeration:
@@ -135,15 +136,15 @@ class Else_clause:
 
 def p_program(p):
     'program : statement_list'
-    p[0] = p[1]
+    p[0] = ("program",p[1])
 
 def p_statement_list(p):
     '''statement_list : statement 
                       | statement_list statement'''
     if (len(p) == 2):
-        p[0] = [p[1]]
+        p[0] = ("list-statement",[p[1]])
     else:
-        p[0] = p[1] + [p[2]]
+        p[0] = ("list-statement",p[1] + [p[2]])
 
 def p_statement(p):
     '''statement : declaration_statement
@@ -151,11 +152,11 @@ def p_statement(p):
                  | newmode_statement
                  | procedure_statement
                  | action_statement'''
-    p[0] = p[1]
+    p[0] = ("statement",p[1])
 
 def p_declaration_statement(p):
     '''declaration_statement : DCL declaration_list SEMICOL'''
-    p[0] = p[2]
+    p[0] = ("statement_declaration",p[2])
 
 def p_declaration_list(p):
     '''declaration_list : declaration 
@@ -168,7 +169,7 @@ def p_declaration_list(p):
 def p_declaration(p):
     '''declaration : identifier_list mode 
                    | identifier_list mode initialization'''
-    if(len(p) == 2):
+    if(len(p) == 3):
         p[0] = Declaration(p[1], p[2])
     else:
         p[0] = Declaration(p[1], p[2], p[3])
@@ -178,7 +179,7 @@ def p_initalization(p):
     p[0] = p[1]
 
 def p_identifier_list(p):
-    '''identifier_list : identifier 
+    '''identifier_list : ID 
                        | identifier_list COMMA ID'''
     if(len(p) == 2):
         p[0] = [p[1]]
@@ -257,11 +258,11 @@ def p_discrete_range_mode(p):
     p[0] = (p[1], p[3])
 
 def p_mode_name(p):
-    '''mode_name : identifier'''
+    '''mode_name : ID'''
     p[0] = p[1]
 
 def p_discrete_mode_name(p):
-    '''discrete_mode_name : identifier'''
+    '''discrete_mode_name : ID'''
     p[0] = p[1]
 
 def p_literal_range(p):
@@ -315,7 +316,7 @@ def p_element_mode(p):
     p[0] = p[1]
 
 def p_location(p):
-    '''location : location_name
+    '''location : string_location 
                 | dereferenced_reference
                 | string_element
                 | string_slice
@@ -341,7 +342,7 @@ def p_string_slice(p):
     p[0] = (p[1], p[3], p[5])
 
 def p_string_location(p):
-    '''string_location : identifier'''
+    '''string_location : ID'''
     p[0] = p[1]
 
 def p_left_element(p):
@@ -418,7 +419,7 @@ def p_value_array_element(p):
     p[0] = Value_array_element(p[1],p[3])
 
 def p_value_array_slice(p):
-    '''value_array_slice : array_primitive_value LBRACKET lower_element COLON upper_element RBRACKET'''
+    '''value_array_slice : array_primitive_value LBRACKET ICONST COLON ICONST RBRACKET'''
     p[0] = Value_array_slice(p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
@@ -432,6 +433,10 @@ def p_parenthesized_expression(p):
 def p_expression(p):
     '''expression : operand0 
                   | conditional_expression'''
+    p[0] = p[1]
+
+def p_integer_expression(p):
+    '''integer_expression : expression'''
     p[0] = p[1]
 
 def p_conditional_expression(p):
@@ -529,8 +534,7 @@ def p_arithmetic_multiplicative_operator(p):
 
 def p_operand3(p):
     '''operand3 : monadic_operator operand4
-                | operand4
-                | integer_literal'''
+                | operand4'''
     if (len(p) == 3):
         p[0] = Operand3(p[2], p[1])
     else:
@@ -557,18 +561,15 @@ def p_action_statement(p):
     if (len(p) == 5):
         p[0] = Action_statement(p[3],p[1])
     else:
-        p[0] = Action_statement(p[1]);
+        p[0] = Action_statement(p[1])
 
 def p_do_action(p):
-    '''do_action : DO control_part SEMICOLON OD
-                 | DO control_part SEMICOLON many_action_statement OD
+    '''do_action : DO control_part SEMICOL OD
+                 | DO control_part SEMICOL many_action_statement OD
                  | DO many_action_statement OD
                  | DO OD
                  '''
 
-def p_action_statement_list(p):
-    '''action_statement_list : '''
-    
 def p_control_part(p):
     '''control_part : for_control while_control
                     | for_control
@@ -607,7 +608,7 @@ def p_step_enumeration(p):
     
 
 def p_loop_counter(p):
-    '''loop_counter : identifier'''
+    '''loop_counter : ID'''
     p[0] = p[1]
 
 def p_start_value(p):
@@ -627,7 +628,7 @@ def p_discrete_expression(p):
     p[0] = p[1]
 
 def p_label_id(p):
-    '''label_id : identifier'''
+    '''label_id : ID'''
     p[0] = p[1]
 
 def p_action(p):
@@ -722,12 +723,12 @@ def p_call_action(p):
     p[0] = p[1]
 
 def p_procedure_call(p):
-    '''procedure_call : procedure_name LPAREN RPAREN
-                      | procedure_name LPAREN parameter_list RPAREN'''
-    if(len(p) == 3):
-        p[0] = Procedure_call(procedure_name)
+    '''procedure_call : ID LPAREN RPAREN
+                      | ID LPAREN parameter_list RPAREN'''
+    if(len(p) == 4):
+        p[0] = Procedure_call(p[1])
     else:
-        p[0] = Procedure_call(procedure_name, parameter_list)
+        p[0] = Procedure_call(p[1], p[3])
 
 def p_parameter_list(p):
     '''parameter_list : parameter
@@ -735,16 +736,12 @@ def p_parameter_list(p):
     if (len(p) == 2):
         p[0] = [p[1]]
     else:
-        p[0] = p[1] + [p[3]]
+        p[0] = [p[1]] + p[3]
 
 def p_parameter(p):
     '''parameter : expression'''
     p[0] = p[1]
 
-def p_procedure_name(p):
-    '''procedure_name : identifier'''
-    p[0] = p[1]
-    
 def p_exit_action(p):
     '''exit_action : EXIT label_id'''
     p[0] = p[2]
@@ -786,7 +783,7 @@ def p_builtin_name(p):
     p[0] = p[1]
     
 def p_procedure_statement(p):
-    '''procedure_statement : label_id COLON procedure_definition SEMICOLON'''
+    '''procedure_statement : label_id COLON procedure_definition SEMICOL'''
     p[0] = (p[1], p[3])
     
 def p_procedure_definition(p):
@@ -860,6 +857,7 @@ def p_error(p):
 
 # Build the parser
 parser = yacc.yacc()
+parser.lexer = lex.lex(object=Lyalex())
 
 while True:
     try:
