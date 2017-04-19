@@ -218,7 +218,7 @@ def p_newmode_list(p):
                     | newmode_list COMMA mode_definition'''
     if(len(p) == 2):
         p[0] = [p[1]]
-    else
+    else:
         p[0] = p[1] + [p[3]]
 
 def p_mode_definition(p): 
@@ -302,7 +302,7 @@ def p_index_mode_list(p):
                        | index_mode_list COMMA index_mode'''
     if(len(p) == 2):
         p[0] = [p[1]]
-    else
+    else:
         p[0] = p[1] + [p[3]]
 
 def p_index_mode(p):
@@ -324,11 +324,11 @@ def p_location(p):
                 | call_action'''
     p[0] = p[1]
 
-def dereferenced_reference(p):
+def p_dereferenced_reference(p):
     '''dereferenced_reference : location ARROW'''
     p[0] = p[1]
 
-def string_element(p):
+def p_string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
     p[0] = (p[1],p[3])
 
@@ -419,14 +419,14 @@ def p_value_array_element(p):
 
 def p_value_array_slice(p):
     '''value_array_slice : array_primitive_value LBRACKET lower_element COLON upper_element RBRACKET'''
-p    p[0] = Value_array_slice(p[1],p[3],p[5])
+    p[0] = Value_array_slice(p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
     '''array_primitive_value : primitive_value'''
     p[0] = p[1]
 
 def p_parenthesized_expression(p):
-    '''parenthesized_expression : LPAREN <expression> RPAREN'''
+    '''parenthesized_expression : LPAREN expression RPAREN'''
     p[0] = p[2]
 
 def p_expression(p):
@@ -448,7 +448,7 @@ def p_boolean_expression(p):
     p[0] = p[1]
 
 def p_then_expression(p):
-   '''then_expression : THEN expression'''
+    '''then_expression : THEN expression'''
     p[0] = p[2]
 
 def p_else_expression(p):
@@ -458,8 +458,6 @@ def p_else_expression(p):
 def p_elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
-<<<<<<< HEAD
-=======
     if (len(p) == 4): 
         p[0] = Elsif_expression(p[2],p[3])
     else:
@@ -552,7 +550,6 @@ def p_operand4(p):
 def p_referenced_location(p):
     '''referenced_location : ARROW location'''
     p[0] = p[2]
->>>>>>> 64d35bf9e47678f653513936160e9ab704f83204
 
 def p_action_statement(p):
     '''action_statement : label_id COLON action SEMICOL
@@ -562,8 +559,6 @@ def p_action_statement(p):
     else:
         p[0] = Action_statement(p[1]);
 
-<<<<<<< HEAD
-#LEO VOCE ESCREVE A PARTIR DAQUI
 def p_do_action(p):
     '''do_action : DO control_part SEMICOLON OD
                  | DO control_part SEMICOLON many_action_statement OD
@@ -580,7 +575,7 @@ def p_control_part(p):
                     | while_control'''
     if(len(p) == 3):
         p[0] = Control_part(p[1], p[2])
-    else(len(p) == 2):
+    elif(len(p) == 2):
         if(p[1][0] == 'while_control'):
             p[0] = Control_part(while_control = p[1])
         else:
@@ -607,12 +602,12 @@ def p_step_enumeration(p):
             p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
         else:
             p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
-    elif(len(p) == 5)
+    elif(len(p) == 5):
         p[0] = Step_enumeration(p[1], p[2], p[3], p[6])
     
 
 def p_loop_counter(p):
-    '''loop counter : identifier'''
+    '''loop_counter : identifier'''
     p[0] = p[1]
 
 def p_start_value(p):
@@ -630,7 +625,7 @@ def p_end_value(p):
 def p_discrete_expression(p):
     '''discrete_expression :  expression'''
     p[0] = p[1]
-=======
+
 def p_label_id(p):
     '''label_id : identifier'''
     p[0] = p[1]
@@ -702,13 +697,12 @@ def p_else_clause(p):
                    | ELSIF boolean_expression then_clause'''
     if (len(p) == 2):
         p[0] = Else_clause()
-    else if (len(p) == 3):
+    elif (len(p) == 3):
         p[0] = Else_clause(many_action_statement = p[2])
-    else if (len(p) == 4):
+    elif (len(p) == 4):
         p[0] = Else_clause(p[2],p[3])
     else:
         p[0] = Else_clause(p[2],p[3],p[4])
->>>>>>> 64d35bf9e47678f653513936160e9ab704f83204
 
 def p_range_enumeration(p):
     '''range_enumeration : loop_counter IN discrete_mode
@@ -736,8 +730,8 @@ def p_procedure_call(p):
         p[0] = Procedure_call(procedure_name, parameter_list)
 
 def p_parameter_list(p):
-    '''parameter_list: parameter
-                     | parameter COMMA parameter_list'''
+    '''parameter_list : parameter
+                      | parameter COMMA parameter_list'''
     if (len(p) == 2):
         p[0] = [p[1]]
     else:
@@ -764,11 +758,11 @@ def p_return_action(p):
         p[0] = (p[1], p[2])
     
 def p_result_action(p):
-    '''result_action: RESULT result'''
+    '''result_action : RESULT result'''
     p[0] = p[2]
     
 def p_result(p):
-    '''result: expression'''
+    '''result : expression'''
     p[0] = p[1]
     
 def p_builtin_call(p):
@@ -791,7 +785,7 @@ def p_builtin_name(p):
 
     p[0] = p[1]
     
-def p_procedure_statement(self, p):
+def p_procedure_statement(p):
     '''procedure_statement : label_id COLON procedure_definition SEMICOLON'''
     p[0] = (p[1], p[3])
     
@@ -807,7 +801,7 @@ def p_procedure_definition(p):
     if(len(p) == 8):
         p[0] = Procedure_definition(p[3], p[5], p[7])
     elif(len(p) == 7):
-        if(p[3] = 'RPAREN'):
+        if(p[3] == 'RPAREN'):
             p[0] = Procedure_definition(result_spec = p[4], statement_list = p[6])
         elif(p[5] == 'SEMICOL'):
             p[0] = Procedure_definition(formal_parameter_list = p[3], statement_list = p[6])
@@ -820,7 +814,7 @@ def p_procedure_definition(p):
             p[0] = Procedure_definition(formal_paramenter_list = p[3])
         else:
             p[0] = Procedure_definition(statement_list = p[5])
-    else(len(p) == 5):
+    elif(len(p) == 5):
         p[0] = Procedure_definition()
         
         
