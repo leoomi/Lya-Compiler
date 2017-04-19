@@ -40,7 +40,7 @@ class Value_array_element:
         self.expression_list = expression_list
 
 class Value_array_slice:
-    def __init__(self, array_primitive_value, lower_element, upper_element)
+    def __init__(self, array_primitive_value, lower_element, upper_element):
         self.array_primitive_value = array_primitive_value  
         self.lower_element = lower_element
         self.upper_element = upper_element 
@@ -82,6 +82,57 @@ class Control_part:
         self.for_control = for_control
         self.for_control = while_control
         
+class Elsif_expression:
+    def __init__(self, boolean_expression, then_expression, elsif_expression=None):
+        self.boolean_expression = boolean_expression
+        self.then_expression = then_expression
+        self.elsif_expression = elsif_expression
+
+class Operand0:
+    def __init__(self, operand1, operand0=None, operator1=None):
+        self.operand1 = operand1     
+        self.operand0 = operand0
+        self.operator1 = operator1
+
+class Operand1:
+    def __init__(self, operand2, operand1=None, operator2=None):
+        self.operand2 = operand2
+        self.operand1 = operand1
+        self.operator2 = operator2
+
+class Operand2:
+    def __init__(self, operand3, operand2=None, arithmetic_multiplicative_operator=None):
+        self.operand3 = operand3
+        self.operand2 = operand2
+        self.arithmetic_multiplicative_operator = arithmetic_multiplicative_operator
+
+class Operand3:
+    def __init__(self, operandOrLiteral, monadic_operator=None):
+        self.operandOrLiteral = operandOrLiteral
+        self.monadic_operator = monadic_operator
+
+class Action_statement:
+    def __init__(self, action, label_id=None):
+        self.action = action
+        self.label_id = label_id
+
+class Assigning_operator:
+    def __init__(self, assignment_symbol, closed_dyadic_operator=None):
+        self.closed_dyadic_operator = closed_dyadic_operator
+        self.assignment_symbol = assignment_symbol
+
+class If_action:
+    def __init__(self, boolean_expression, then_clause, else_clause=None):
+        self.boolean_expression = boolean_expression
+        self.closed_dyadic_operator = closed_dyadic_operator
+
+class Else_clause:
+    def __init__(self, boolean_expression=None, then_clause=None, else_clause=None, many_action_statement=None):
+        self.boolean_expression = boolean_expression
+        self.then_clause = then_clause
+        self.else_clause = else_clause
+        self.many_action_statement = many_action_statement
+
 def p_program(p):
     'program : statement_list'
     p[0] = p[1]
@@ -368,7 +419,7 @@ def p_value_array_element(p):
 
 def p_value_array_slice(p):
     '''value_array_slice : array_primitive_value LBRACKET lower_element COLON upper_element RBRACKET'''
-    p[0] = Value_array_slice(p[1],p[3],p[5])
+p    p[0] = Value_array_slice(p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
     '''array_primitive_value : primitive_value'''
@@ -404,11 +455,114 @@ def p_else_expression(p):
     '''else_expression : ELSE expression'''
     p[0] = p[2]
 
-def elsif_expression(p):
+def p_elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
+<<<<<<< HEAD
+=======
+    if (len(p) == 4): 
+        p[0] = Elsif_expression(p[2],p[3])
+    else:
+        p[0] = Elsif_expression(p[3],p[4],p[1])
 
+def p_operand0(p):
+    '''operand0 : operand1
+                | operand0 operator1 operand1'''
+    if(len(p) == 2):
+        p[0] = Operand0(p[1])
+    else:
+        p[0] = Operand0(p[3],p[1],p[2])
 
+def p_operator1(p):
+    '''operator1 : relational_operator
+                 | membership_operator'''
+    p[0] = p[1]
+
+def p_relational_operator(p):
+    '''relational_operator : AND 
+                           | OR 
+                           | EQUALS
+                           | DIFF 
+                           | GT 
+                           | GE 
+                           | LS 
+                           | LE'''
+    p[0] = p[1]
+    
+def p_membership_operator(p):
+    '''membership_operator : IN'''
+    p[0] = p[1]
+
+def p_operand1(p):
+    '''operand1 : operand2
+                | operand1 operator2 operand2'''
+    if (len(p) == 2):
+        p[0] = Operand1(p[1])
+    else:
+        p[0] = Operand1(p[3],p[1],p[2])
+
+def p_operator2(p):
+    '''operator2 : arithmetic_additive_operator
+                 | string_concatenation_operator'''
+    p[0] = p[1]
+
+def p_arithmetic_additive_operator(p):
+    '''arithmetic_additive_operator : PLUS
+                                    | MINUS'''
+    p[0] = p[1]
+
+def p_string_concatenation_operator(p):
+    '''string_concatenation_operator : CONCAT'''
+    p[0] = p[1]
+
+def p_operand2(p):
+    '''operand2 : operand3
+                | operand2 arithmetic_multiplicative_operator operand3'''
+    if (len(p) == 2):
+        p[0] = Operand2(p[1])
+    else:
+        p[0] = Operand2(p[3],p[1],p[2])
+
+def p_arithmetic_multiplicative_operator(p):
+    '''arithmetic_multiplicative_operator : TIMES 
+                                          | DIVIDE
+                                          | MOD'''
+    p[0] = p[1]
+
+def p_operand3(p):
+    '''operand3 : monadic_operator operand4
+                | operand4
+                | integer_literal'''
+    if (len(p) == 3):
+        p[0] = Operand3(p[2], p[1])
+    else:
+        p[0] = Operand3(p[1])
+
+def p_monadic_operator(p):
+    '''monadic_operator : MINUS
+                        | NOT'''
+    p[0] = p[1]
+
+def p_operand4(p):
+    '''operand4 : location
+                | referenced_location
+                | primitive_value'''
+    p[0] = p[1]
+
+def p_referenced_location(p):
+    '''referenced_location : ARROW location'''
+    p[0] = p[2]
+>>>>>>> 64d35bf9e47678f653513936160e9ab704f83204
+
+def p_action_statement(p):
+    '''action_statement : label_id COLON action SEMICOL
+                        | action SEMICOL'''
+    if (len(p) == 5):
+        p[0] = Action_statement(p[3],p[1])
+    else:
+        p[0] = Action_statement(p[1]);
+
+<<<<<<< HEAD
 #LEO VOCE ESCREVE A PARTIR DAQUI
 def p_do_action(p):
     '''do_action : DO control_part SEMICOLON OD
@@ -476,6 +630,85 @@ def p_end_value(p):
 def p_discrete_expression(p):
     '''discrete_expression :  expression'''
     p[0] = p[1]
+=======
+def p_label_id(p):
+    '''label_id : identifier'''
+    p[0] = p[1]
+
+def p_action(p):
+    '''action : bracketed_action
+              | assignment_action
+              | call_action
+              | exit_action
+              | return_action
+              | result_action'''
+    p[0] = p[1]
+
+def p_bracketed_action(p):
+    '''bracketed_action : if_action 
+                        | do_action'''
+    p[0] = p[1]
+
+def p_assignment_action(p):
+    '''assignment_action : location assigning_operator expression'''
+    p[0] = (p[1], p[2], p[3])
+
+def p_assigning_operator(p):
+    '''assigning_operator : closed_dyadic_operator assignment_symbol
+                          | assignment_symbol'''
+    if (len(p) == 3):
+        p[0] = Assigning_operator(p[2],p[1])
+    else:
+        p[0] = Assigning_operator(p[1])
+
+def p_closed_dyadic_operator(p):
+    '''closed_dyadic_operator : arithmetic_additive_operator
+                              | arithmetic_multiplicative_operator
+                              | string_concatenation_operator'''
+    p[0] = p[1]
+
+def p_assignment_symbol(p):
+    '''assignment_symbol : ASSIGN'''
+    p[0] = p[1]
+
+def p_if_action(p):
+    '''if_action : IF boolean_expression then_clause else_clause FI
+                 | IF boolean_expression then_clause FI'''
+    if (len(p) == 6):
+        p[0] = If_action(p[2],p[3],p[4])
+    else:
+        p[0] = If_action(p[2],p[3])
+
+def p_then_clause(p):
+    '''then_clause : THEN many_action_statement
+                   | THEN'''
+    if (len(p) == 3):
+        p[0] = (p[1],p[2])
+    else:
+        p[0] = (p[1],None)
+
+def p_many_action_statement(p):
+    '''many_action_statement : action_statement
+                             | many_action_statement action_statement'''
+    if (len(p) == 2):
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[2]]
+
+def p_else_clause(p):
+    '''else_clause : ELSE many_action_statement
+                   | ELSE
+                   | ELSIF boolean_expression then_clause else_clause
+                   | ELSIF boolean_expression then_clause'''
+    if (len(p) == 2):
+        p[0] = Else_clause()
+    else if (len(p) == 3):
+        p[0] = Else_clause(many_action_statement = p[2])
+    else if (len(p) == 4):
+        p[0] = Else_clause(p[2],p[3])
+    else:
+        p[0] = Else_clause(p[2],p[3],p[4])
+>>>>>>> 64d35bf9e47678f653513936160e9ab704f83204
 
 def p_range_enumeration(p):
     '''range_enumeration : loop_counter IN discrete_mode
