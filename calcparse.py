@@ -411,8 +411,15 @@ def elsif_expression(p):
 
 #LEO VOCE ESCREVE A PARTIR DAQUI
 def p_do_action(p):
-    '''do_action : DO control_part SEMICOLON  '''
+    '''do_action : DO control_part SEMICOLON OD
+                 | DO control_part SEMICOLON many_action_statement OD
+                 | DO many_action_statement OD
+                 | DO OD
+                 '''
 
+def p_action_statement_list(p):
+    '''action_statement_list : '''
+    
 def p_control_part(p):
     '''control_part : for_control while_control
                     | for_control
