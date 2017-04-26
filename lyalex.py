@@ -172,7 +172,6 @@ class Lyalex:
 
     def __init__(self):
         self.tokens += list(self.reserved.values())
-"""
 # Test it out
 data = '''
 /* Compute the fatorial of an integer */
@@ -211,4 +210,3 @@ def main():
 if __name__ == "__main__":
     # execute only if run as a script
     main()
-"""

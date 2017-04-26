@@ -504,6 +504,8 @@ def p_operand1(p):
         p[0] = Operand1(p[1])
     else:
         p[0] = Operand1(p[3],p[1],p[2])
+        if(p[2] == "PLUS"):
+            p[0] = Add(p[1],p[3])
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
