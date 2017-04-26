@@ -5,6 +5,7 @@ import ply.lex as lex
 
 # Get the token map from the lexer.  This is required.
 from lyalex import Lyalex
+from ast import *
 
 tokens = Lyalex().tokens
 
@@ -861,7 +862,7 @@ parser.lexer = lex.lex(object=Lyalex())
 
 while True:
     try:
-        s = raw_input('calc > ')
+        s = input('calc > ')
     except EOFError:
         break
     if not s: continue
