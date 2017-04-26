@@ -16,7 +16,7 @@ class AST(object):
                 setattr(self,name,value)
 
 class Program(AST):
-    _fields = [’stmts’]
+    _fields = ['stmts']
     
 #atribuir valor para atributo _typo através de um construtor antes do super construtor?
 #dessa forma consigo aplicar a "lógica" para obter tipo resultante, caso contrário, de que forma seria?
