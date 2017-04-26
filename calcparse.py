@@ -136,15 +136,15 @@ class Else_clause:
 
 def p_program(p):
     'program : statement_list'
-    p[0] = ("program",p[1])
+    p[0] = Program(p[1])
 
 def p_statement_list(p):
     '''statement_list : statement 
                       | statement_list statement'''
     if (len(p) == 2):
-        p[0] = ("list-statement",[p[1]])
+        p[0] = [p[1]]
     else:
-        p[0] = ("list-statement",p[1] + [p[2]])
+        p[0] = p[1] + [p[2]]
 
 def p_statement(p):
     '''statement : declaration_statement
@@ -152,11 +152,11 @@ def p_statement(p):
                  | newmode_statement
                  | procedure_statement
                  | action_statement'''
-    p[0] = ("statement",p[1])
+    p[0] = p[1]
 
 def p_declaration_statement(p):
     '''declaration_statement : DCL declaration_list SEMICOL'''
-    p[0] = ("statement_declaration",p[2])
+    p[0] = p[2]
 
 def p_declaration_list(p):
     '''declaration_list : declaration 
