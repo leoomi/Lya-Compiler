@@ -391,28 +391,28 @@ def p_literal(p):
 
 def p_integer_literal(p):
     '''integer_literal :  ICONST'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], 'int')
 
 def p_boolean_literal(p):
     '''boolean_literal : FALSE 
                        | TRUE'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "bool")
 
 def p_character_literal(p):
     '''character_literal : CCONST
                          | APOSTH CARET LPAREN ICONST RPAREN APOSTH'''
     if(len(p) == 2):
-        p[0] = p[1]
+        p[0] = Constant(p[1], "char")
     else:
-        p[0] = p[4]
+        p[0] = Constant(p[4], "char")
 
 def p_empty_literal(p):
     '''empty_literal : NULL'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "null")
 
 def p_character_string_literal(p):
     '''character_string_literal : SCONST'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "chars")
 
 
 def p_value_array_element(p):
@@ -867,4 +867,4 @@ while True:
         break
     if not s: continue
     result = parser.parse(s)
-    print(result)
+    NodeVisitor.visit(result)
