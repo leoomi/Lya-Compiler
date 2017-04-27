@@ -56,12 +56,13 @@ class NodeVisitor(object):
         """
         for field in getattr(node,"_fields"):
             value = getattr(node,field,None)
-            if isinstance(value, list):
+            if isinstance(value, list) or isinstance(value,tuple):
                 for item in value:
                     if isinstance(item,AST):
                         self.visit(item)
             elif isinstance(value, AST):
                 self.visit(value)
+        
 
 class Program(AST):
     _fields = ['stmts']
@@ -75,5 +76,8 @@ class And(AST):
 class Assign(AST):
     _fields = ['nodes', 'expr']
 
+class Variable(AST):
+    _fields = ['name', 'value', 'type']
 
-
+class Constant(AST):
+    _fields = ['value', 'type']

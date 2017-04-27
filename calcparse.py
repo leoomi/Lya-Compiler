@@ -9,135 +9,9 @@ from ast import *
 
 tokens = Lyalex().tokens
 
-class Declaration:
-    def __init__(self, identifier_list, mode, value=None):
-        self.identifier_list = identifier_list
-        self.mode = mode
-        self.value = value
-
-class Synonym_definition:
-    def __init__(self, identifier_list, constant_expression, mode=None):
-        self.identifier_list = identifier_list
-        self.mode = mode
-        self.constant_expression = constant_expression
-
-class Mode_definition:
-    def __init__(self, identifier_list, mode):
-        self.identifier_list = identifier_list
-        self.mode = mode
-
-class Returns_definition:
-    def __init__(self, mode, result_attribute=None):
-        self.mode = mode;
-        self.result_attribute = result_attribute
-
-class Parameter_spec:
-    def __init__(self, mode, parameter_attribute=None):
-        self.mode = mode
-        self.parameter_attribute = parameter_attribute
-
-class Value_array_element:
-    def __init__(self, array_primitive_value, expression_list):
-        self.array_primitive_value = array_primitive_value
-        self.expression_list = expression_list
-
-class Value_array_slice:
-    def __init__(self, array_primitive_value, lower_element, upper_element):
-        self.array_primitive_value = array_primitive_value  
-        self.lower_element = lower_element
-        self.upper_element = upper_element 
-
-class Conditional_expression:
-    def __init__(self, boolean_expression, then_expression, else_expression, elsif_expression=None):
-        self.boolean_expression = boolean_expression
-        self.then_expression = then_expression
-        self.else_expression = else_expression
-        self.elsif_expression = elsif_expression
-
-class Procedure_definition:
-    def __init__(self, formal_parameter_list=None, result_spec=None, statement_list=None):
-        self.formal_paremeter = formal_parameter_list
-        self.result_spec = result_spec
-        self.statement_list = statement_list
-
-class Builtin_call:
-    def __init__(self, builtin_name, parameter_list=None):
-        self.builtin_name = builtin_name
-        self.parameter_list = parameter_list
-
-class Procedure_call:
-    def __init__(self, ID, parameter_list=None):
-        self.ID = ID
-        self.parameter_list = parameter_list
-
-class Step_enumeration:
-    def __init__(self, loop_counter, assignment_symbol, start_value, end_value, step_value=None, down=None):
-        self.loop_counter = loop_counter
-        self.assignment_symbol = assignment_symbol
-        self.start_value = start_value
-        self.end_value = end_value
-        self.step_value = step_value
-        self.down = down
-
-class Control_part:
-    def __init__(self, for_control=None, while_control=None):
-        self.for_control = for_control
-        self.for_control = while_control
-        
-class Elsif_expression:
-    def __init__(self, boolean_expression, then_expression, elsif_expression=None):
-        self.boolean_expression = boolean_expression
-        self.then_expression = then_expression
-        self.elsif_expression = elsif_expression
-
-class Operand0:
-    def __init__(self, operand1, operand0=None, operator1=None):
-        self.operand1 = operand1     
-        self.operand0 = operand0
-        self.operator1 = operator1
-
-class Operand1:
-    def __init__(self, operand2, operand1=None, operator2=None):
-        self.operand2 = operand2
-        self.operand1 = operand1
-        self.operator2 = operator2
-
-class Operand2:
-    def __init__(self, operand3, operand2=None, arithmetic_multiplicative_operator=None):
-        self.operand3 = operand3
-        self.operand2 = operand2
-        self.arithmetic_multiplicative_operator = arithmetic_multiplicative_operator
-
-class Operand3:
-    def __init__(self, operandOrLiteral, monadic_operator=None):
-        self.operandOrLiteral = operandOrLiteral
-        self.monadic_operator = monadic_operator
-
-class Action_statement:
-    def __init__(self, action, label_id=None):
-        self.action = action
-        self.label_id = label_id
-
-class Assigning_operator:
-    def __init__(self, assignment_symbol, closed_dyadic_operator=None):
-        self.closed_dyadic_operator = closed_dyadic_operator
-        self.assignment_symbol = assignment_symbol
-
-class If_action:
-    def __init__(self, boolean_expression, then_clause, else_clause=None):
-        self.boolean_expression = boolean_expression
-        self.closed_dyadic_operator = closed_dyadic_operator
-
-class Else_clause:
-    def __init__(self, boolean_expression=None, then_clause=None, else_clause=None, many_action_statement=None):
-        self.boolean_expression = boolean_expression
-        self.then_clause = then_clause
-        self.else_clause = else_clause
-        self.many_action_statement = many_action_statement
-
 def p_program(p):
     'program : statement_list'
-    p[0] = Program(p[1])
+    p[0] = p[1]
 
 def p_statement_list(p):
     '''statement_list : statement 
@@ -171,9 +45,9 @@ def p_declaration(p):
     '''declaration : identifier_list mode 
                    | identifier_list mode initialization'''
     if(len(p) == 3):
-        p[0] = Declaration(p[1], p[2])
+        p[0] = (p[1], p[2])
     else:
-        p[0] = Declaration(p[1], p[2], p[3])
+        p[0] = (p[1], p[2], p[3])
 
 def p_initalization(p):
     '''initialization : ASSIGN expression'''
@@ -203,9 +77,9 @@ def p_synonym_definition(p):
     '''synonym_definition : identifier_list ASSIGN constant_expression
                           | identifier_list mode ASSIGN constant_expression'''
     if(len(p) == 4):
-        p[0] = Synonym_definition(p[1],p[3])
+        p[0] = (p[1],p[3])
     else:
-        p[0] = Synonym_definition(p[1],p[4],p[2])
+        p[0] = (p[1],p[4],p[2])
 
 def p_constant_expression(p):
     '''constant_expression : expression'''
@@ -391,37 +265,37 @@ def p_literal(p):
 
 def p_integer_literal(p):
     '''integer_literal :  ICONST'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], 'int')
 
 def p_boolean_literal(p):
     '''boolean_literal : FALSE 
                        | TRUE'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "bool")
 
 def p_character_literal(p):
     '''character_literal : CCONST
                          | APOSTH CARET LPAREN ICONST RPAREN APOSTH'''
     if(len(p) == 2):
-        p[0] = p[1]
+        p[0] = Constant(p[1], "char")
     else:
-        p[0] = p[4]
+        p[0] = Constant(p[4], "char")
 
 def p_empty_literal(p):
     '''empty_literal : NULL'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "null")
 
 def p_character_string_literal(p):
     '''character_string_literal : SCONST'''
-    p[0] = p[1]
+    p[0] = Constant(p[1], "chars")
 
 
 def p_value_array_element(p):
     '''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
-    p[0] = Value_array_element(p[1],p[3])
+    p[0] = (p[1],p[3])
 
 def p_value_array_slice(p):
     '''value_array_slice : array_primitive_value LBRACKET ICONST COLON ICONST RBRACKET'''
-    p[0] = Value_array_slice(p[1],p[3],p[5])
+    p[0] = (p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
     '''array_primitive_value : primitive_value'''
@@ -444,9 +318,9 @@ def p_conditional_expression(p):
     '''conditional_expression : IF boolean_expression then_expression else_expression FI
                               | IF boolean_expression then_expression elsif_expression else_expression FI'''
     if(len(p) == 6):
-        p[0] = Conditional_expression(p[2],p[3],p[4])
+        p[0] = (p[2],p[3],p[4])
     else:
-        p[0] = Conditional_expression(p[2],p[3],p[5],p[4])
+        p[0] = (p[2],p[3],p[5],p[4])
 
 
 def p_boolean_expression(p):
@@ -465,17 +339,17 @@ def p_elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
     if (len(p) == 4): 
-        p[0] = Elsif_expression(p[2],p[3])
+        p[0] = (p[2],p[3])
     else:
-        p[0] = Elsif_expression(p[3],p[4],p[1])
+        p[0] = (p[3],p[4],p[1])
 
 def p_operand0(p):
     '''operand0 : operand1
                 | operand0 operator1 operand1'''
     if(len(p) == 2):
-        p[0] = Operand0(p[1])
+        p[0] = (p[1])
     else:
-        p[0] = Operand0(p[3],p[1],p[2])
+        p[0] = (p[3],p[1],p[2])
 
 def p_operator1(p):
     '''operator1 : relational_operator
@@ -501,11 +375,9 @@ def p_operand1(p):
     '''operand1 : operand2
                 | operand1 operator2 operand2'''
     if (len(p) == 2):
-        p[0] = Operand1(p[1])
+        p[0] = (p[1])
     else:
-        p[0] = Operand1(p[3],p[1],p[2])
-        if(p[2] == "PLUS"):
-            p[0] = Add(p[1],p[3])
+        p[0] = (p[3],p[1],p[2])
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
@@ -525,9 +397,9 @@ def p_operand2(p):
     '''operand2 : operand3
                 | operand2 arithmetic_multiplicative_operator operand3'''
     if (len(p) == 2):
-        p[0] = Operand2(p[1])
+        p[0] = (p[1])
     else:
-        p[0] = Operand2(p[3],p[1],p[2])
+        p[0] = (p[3],p[1],p[2])
 
 def p_arithmetic_multiplicative_operator(p):
     '''arithmetic_multiplicative_operator : TIMES 
@@ -539,9 +411,9 @@ def p_operand3(p):
     '''operand3 : monadic_operator operand4
                 | operand4'''
     if (len(p) == 3):
-        p[0] = Operand3(p[2], p[1])
+        p[0] = (p[2], p[1])
     else:
-        p[0] = Operand3(p[1])
+        p[0] = (p[1])
 
 def p_monadic_operator(p):
     '''monadic_operator : MINUS
@@ -562,9 +434,9 @@ def p_action_statement(p):
     '''action_statement : label_id COLON action SEMICOL
                         | action SEMICOL'''
     if (len(p) == 5):
-        p[0] = Action_statement(p[3],p[1])
+        p[0] = (p[3],p[1])
     else:
-        p[0] = Action_statement(p[1])
+        p[0] = (p[1])
 
 def p_do_action(p):
     '''do_action : DO control_part SEMICOL OD
@@ -578,16 +450,14 @@ def p_control_part(p):
                     | for_control
                     | while_control'''
     if(len(p) == 3):
-        p[0] = Control_part(p[1], p[2])
+        p[0] = (p[1], p[2])
     elif(len(p) == 2):
-        if(p[1][0] == 'while_control'):
-            p[0] = Control_part(while_control = p[1])
-        else:
-            p[0] = Control_part(for_control = p[1])
+        #POSSIVELMENTE ERRADO
+        p[0] = p[1]
 
 def p_for_control(p):
     '''for_control : FOR iteration'''
-    p[0] = ('for_control', p[2])
+    p[0] = p[2]
 
 def p_interation(p):
     '''iteration : step_enumeration
@@ -600,14 +470,11 @@ def p_step_enumeration(p):
                         | loop_counter assignment_symbol start_value step_value end_value
                         | loop_counter assignment_symbol start_value end_value'''
     if(len(p) == 7):
-        p[0] = Step_enumeration(p[1], p[2], p[3], p[6], p[4], p[5])
+        p[0] = (p[1], p[2], p[3], p[6], p[4], p[5])
     elif(len(p) == 6):
-        if(p[4] == 'DOWN'):
-            p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
-        else:
-            p[0] = Step_enumeration(p[1], p[2], p[3], p[6], )
+        p[0] = (p[1], p[2], p[3], p[4], p[5])
     elif(len(p) == 5):
-        p[0] = Step_enumeration(p[1], p[2], p[3], p[6])
+        p[0] = (p[1], p[2], p[3], p[4])
     
 
 def p_loop_counter(p):
@@ -656,9 +523,9 @@ def p_assigning_operator(p):
     '''assigning_operator : closed_dyadic_operator assignment_symbol
                           | assignment_symbol'''
     if (len(p) == 3):
-        p[0] = Assigning_operator(p[2],p[1])
+        p[0] = (p[2],p[1])
     else:
-        p[0] = Assigning_operator(p[1])
+        p[0] = p[1]
 
 def p_closed_dyadic_operator(p):
     '''closed_dyadic_operator : arithmetic_additive_operator
@@ -674,9 +541,9 @@ def p_if_action(p):
     '''if_action : IF boolean_expression then_clause else_clause FI
                  | IF boolean_expression then_clause FI'''
     if (len(p) == 6):
-        p[0] = If_action(p[2],p[3],p[4])
+        p[0] = (p[2],p[3],p[4])
     else:
-        p[0] = If_action(p[2],p[3])
+        p[0] = (p[2],p[3])
 
 def p_then_clause(p):
     '''then_clause : THEN many_action_statement
@@ -700,21 +567,21 @@ def p_else_clause(p):
                    | ELSIF boolean_expression then_clause else_clause
                    | ELSIF boolean_expression then_clause'''
     if (len(p) == 2):
-        p[0] = Else_clause()
+        p[0] = p[1]
     elif (len(p) == 3):
-        p[0] = Else_clause(many_action_statement = p[2])
+        p[0] = p[2]
     elif (len(p) == 4):
-        p[0] = Else_clause(p[2],p[3])
+        p[0] = (p[2],p[3])
     else:
-        p[0] = Else_clause(p[2],p[3],p[4])
+        p[0] = (p[2],p[3],p[4])
 
 def p_range_enumeration(p):
     '''range_enumeration : loop_counter IN discrete_mode
                          | loop_counter DOWN IN discrete_mode'''
     if(len(p) == 4):
-        p[0] = (p[1], None, discrete_mode)
+        p[0] = (p[1], None, p[3])
     else:
-        p[0] = (p[1], 'DOWN', discrete_mode)
+        p[0] = (p[1], 'DOWN', p[4])
 
 def p_while_control(p):
     '''while_control : WHILE boolean_expression'''
@@ -729,9 +596,9 @@ def p_procedure_call(p):
     '''procedure_call : ID LPAREN RPAREN
                       | ID LPAREN parameter_list RPAREN'''
     if(len(p) == 4):
-        p[0] = Procedure_call(p[1])
+        p[0] = p[1]
     else:
-        p[0] = Procedure_call(p[1], p[3])
+        p[0] = (p[1], p[3])
 
 def p_parameter_list(p):
     '''parameter_list : parameter
@@ -769,9 +636,9 @@ def p_builtin_call(p):
     '''builtin_call : builtin_name LPAREN RPAREN
                     | builtin_name LPAREN parameter_list RPAREN'''
     if(len(p) == 3):
-        p[0] = Builtin_call(p[1])
+        p[0] = p[1]
     else:
-        p[0] = Builtin_call(p[1], p[3])
+        p[0] = (p[1], p[3])
     
 def p_builtin_name(p):
     '''builtin_name : ABS
@@ -798,25 +665,9 @@ def p_procedure_definition(p):
                             | PROC LPAREN formal_parameter_list RPAREN SEMICOL statement_list END
                             | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL END
                             | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL statement_list END'''
-    if(len(p) == 8):
-        p[0] = Procedure_definition(p[3], p[5], p[7])
-    elif(len(p) == 7):
-        if(p[3] == 'RPAREN'):
-            p[0] = Procedure_definition(result_spec = p[4], statement_list = p[6])
-        elif(p[5] == 'SEMICOL'):
-            p[0] = Procedure_definition(formal_parameter_list = p[3], statement_list = p[6])
-        else:
-            p[0] = Procedure_definition(formal_parameter_list = p[3], result_spec = p[5])
-    elif(len(p) == 6):
-        if(p[3] == 'RPAREN' and p[5] == 'SEMICOL'):
-            p[0] = Procedure_definition(result_spec = p[4])
-        elif(p[3] == 'RPAREN'):
-            p[0] = Procedure_definition(formal_paramenter_list = p[3])
-        else:
-            p[0] = Procedure_definition(statement_list = p[5])
-    elif(len(p) == 5):
-        p[0] = Procedure_definition()
-        
+   
+    #CUIDADO COM ESSE CARA  
+    p[0] = (p[3], p[5], p[7])
         
         
 def p_formal_parameter_list(p):
@@ -835,9 +686,9 @@ def p_paremeter_spec(p):
     '''parameter_spec : mode
                       | mode parameter_attribute'''
     if(len(p) == 2):
-        p[0] = Parameter_spec(p[1])
+        p[0] = p[1]
     else:
-        p[0] = Parameter_spec(p[1], p[2])
+        p[0] = (p[1], p[2])
         
 def p_paremeter_attribute(p):
     '''parameter_attribute : LOC'''
@@ -847,9 +698,9 @@ def p_result_spec(p):
     '''result_spec : RETURNS LPAREN mode RPAREN
                           | RETURNS LPAREN mode result_attribute RPAREN'''
     if(len(p) == 5):
-        p[0] = Result_spec(p[3])
+        p[0] = p[3]
     else:
-        p[0] = Result_spec(p[3], p[4])
+        p[0] = (p[3], p[4])
 
 def p_result_attribute(p):
     '''result_attribute : LOC'''
