@@ -1,3 +1,4 @@
+
 class AST(object):
     """
         Base class example for the AST nodes.  Each node is expected to
@@ -66,6 +67,48 @@ class NodeVisitor(object):
 
 class Program(AST):
     _fields = ['stmts']
+
+class Statement(AST):
+    _fields = ['type']
+
+class Initialization(AST):
+    _fields = ['expression']
+
+class SynonymDefinition(AST):
+    _fields = ['identifier_list', 'mode', 'constant_expression']
+
+class ModeDefinition(AST):
+    _fields = ['identifier_list', 'mode']
+
+class Mode(AST):
+    _fields = ['type']
+
+class RangeMode(Mode):
+    def __init__(self):
+        self._fields = super._fields + ['literal_range']
+
+class LiteralRange(AST):
+    _fields = ['lower_bound', 'upper_bound']
+
+class StringMode(Mode):
+    def __init__(self):
+        self._fields = super._fields + ['string_length']
+
+class ArrayMode(Mode):
+    def __init__(self):
+        self._fields = super._fields + ['index_mode_list', 'element_mode']
+
+class StringElement(AST):
+    _fields = ['string_location', 'start_element']
+
+class StringSlice(AST):
+    _fields = ['string_location', 'left_element', 'right_element']
+
+class ArrayElement(AST):
+    _fields = ['array_location', 'expression_list']
+
+class ArraySlice(AST):
+    _fields = ['array_location', 'lower_bound', 'upper_bound']
     
 class Add(AST):
     _fields = ['left', 'right']
@@ -77,7 +120,95 @@ class Assign(AST):
     _fields = ['nodes', 'expr']
 
 class Variable(AST):
-    _fields = ['name', 'value', 'type']
+    _fields = ['name', 'value', 'type', 'lineno']
 
 class Constant(AST):
     _fields = ['value', 'type']
+
+class ValueArrayElement(AST):
+    _fields = ['array_primitive_value', 'expression_list']
+
+class ValueArraySlice(AST):
+    _fields = ['array_primitive_value', 'lower_bound', 'upper_bound']
+
+class ConditionalExpression(AST):
+    _fields = ['boolean_expression', 'then_expression', 'elsif_expression', 'else_expression']
+
+class ElsifExpression(AST):
+    _fields = ['elsif_expression', 'boolean_expression', 'then_expression']
+
+class Operand0(AST):
+    _fields = ['operand0', 'operator1', 'operand1']
+
+#Relational operator (>, <, and, or, etc) ou Membership Operator (só IN)
+class RelationalOperator(AST):
+    _fields = ['type' ,'value']
+
+class Operand1(AST):
+    _fields = ['operand1', 'operator2', 'operand2']
+
+#Arithmetic additive ou string concatenation
+class Operator2(AST):
+    _fields = ['type', 'value']
+
+class Operand2(AST):
+    _fields = ['operand2', 'arithmetic_mult_op', 'operand3']
+
+class Operand3(AST):
+    _fields = ['monadic_operator', 'operand4']
+
+class ActionStatement(AST):
+    _fields = ['label_id', 'action']
+
+class DoAction(AST):
+    _fields = ['control_part', 'many_action_statement']
+
+class ControlPart(AST):
+    _fields = ['for_control', 'while_control']
+
+class StepEnumeration(AST):
+    _fields = ['loop_counter', 'assignment_symbol', 'start_value', 'step_value', 'end_value']
+
+class AssignmentAction(AST):
+    _fields = ['location', 'assigning_operator', 'expression']
+
+class AssignmentOperator(AST):
+    _fields = ['closed_dyadic_operator', 'assignment_symbol']
+
+class IfAction(AST):
+    _fields = ['boolean_expression', 'then_clause', 'else_clause']
+
+class ThenClause(AST):
+    _fields = ['many_action_statement']
+
+class ElseClause(AST):
+    _fields = ['many_action_statement', 'boolean_expression', 'then_clause', 'else_clause']
+
+class RangeEnumeration(AST):
+    _fields = ['loop_counter', 'discrete_mode']
+
+class ProcedureCall(AST):
+    _fields = ['parameter_list']
+
+class ReturnAction(AST):
+    _fields = ['result']
+
+class BuiltinCall(AST):
+    _fields = ['builtin_name', 'parameter_list']
+
+class ProcedureStatement(AST):
+    _fields = ['label_id', 'procedure_definition']
+
+class ProcedureDefinition(AST):
+    _fields = ['formal_paramenter_list', 'result_spec', 'statement_list']
+
+class FormalParameter(AST):
+    _fields = ['identifier_list', 'parameter_spec']
+    
+class ParameterSpec(AST):
+    _fields = ['mode', 'parameter_attribute']
+    
+class ResultSpec(AST):
+    _fields = ['mode', 'result_attribute']
+
+
