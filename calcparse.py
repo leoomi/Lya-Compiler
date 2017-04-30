@@ -31,7 +31,7 @@ def p_statement(p):
 
 def p_declaration_statement(p):
     '''declaration_statement : DCL declaration_list SEMICOL'''
-    p[0] = p[2]
+    p[0] = ('dcl', p[2])
 
 def p_declaration_list(p):
     '''declaration_list : declaration 
@@ -45,13 +45,13 @@ def p_declaration(p):
     '''declaration : identifier_list mode 
                    | identifier_list mode initialization'''
     if(len(p) == 3):
-        p[0] = (p[1], p[2])
+        p[0] = ('declaration', p[1], p[2])
     else:
-        p[0] = (p[1], p[2], p[3])
+        p[0] = ('declaration', p[1], p[2], p[3])
 
 def p_initalization(p):
     '''initialization : ASSIGN expression'''
-    p[0] = p[1]
+    p[0] = ('assign', p[1])
 
 def p_identifier_list(p):
     '''identifier_list : ID 
@@ -63,7 +63,7 @@ def p_identifier_list(p):
 
 def p_synonym_statement(p):
     '''synonym_statement : SYN synonym_list SEMICOL'''
-    p[0] = p[2]
+    p[0] = ('syn', p[2])
 
 def p_synonym_list(p):
     '''synonym_list : synonym_definition
@@ -77,9 +77,9 @@ def p_synonym_definition(p):
     '''synonym_definition : identifier_list ASSIGN constant_expression
                           | identifier_list mode ASSIGN constant_expression'''
     if(len(p) == 4):
-        p[0] = (p[1],p[3])
+        p[0] = ('syn_def',p[1],p[3])
     else:
-        p[0] = (p[1],p[4],p[2])
+        p[0] = ('syn_def',p[1],p[4],p[2])
 
 def p_constant_expression(p):
     '''constant_expression : expression'''
@@ -87,7 +87,7 @@ def p_constant_expression(p):
 
 def p_newmode_statement(p): 
     '''newmode_statement : TYPE newmode_list SEMICOL'''
-    p[0] = p[2]
+    p[0] = ('newmode_statement',p[1],p[2])
 
 def p_newmode_list(p):
     '''newmode_list : mode_definition
@@ -99,7 +99,7 @@ def p_newmode_list(p):
 
 def p_mode_definition(p): 
     '''mode_definition : identifier_list ASSIGN mode'''
-    p[0] = Mode_definition(p[1],p[3])
+    p[0] = ('mode_def',p[1],p[3])
 
 def p_mode(p):
     '''mode : mode_name
@@ -117,44 +117,44 @@ def p_discrete_mode(p):
 
 def p_integer_mode(p):
     '''integer_mode : INT'''
-    p[0] = p[1]
+    p[0] = ('int',p[1])
 
 def p_boolean_mode(p):
     '''boolean_mode : BOOL'''
-    p[0] = p[1]
+    p[0] = ('bool',p[1])
 
 def p_character_mode(p):
     '''character_mode : CHAR'''
-    p[0] = p[1]
+    p[0] = ('char',p[1])
 
 def p_discrete_range_mode(p):
     '''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
                            | discrete_mode LPAREN literal_range RPAREN'''
-    p[0] = (p[1], p[3])
+    p[0] = ('disc_range_mode',p[1], p[3])
 
 def p_mode_name(p):
     '''mode_name : ID'''
-    p[0] = p[1]
+    p[0] = ('mode_name',p[1])
 
 def p_discrete_mode_name(p):
     '''discrete_mode_name : ID'''
-    p[0] = p[1]
+    p[0] = ('disc_mode_name',p[1])
 
 def p_literal_range(p):
     '''literal_range : lower_bound COLON upper_bound'''
-    p[0] = (p[1],p[3])
+    p[0] = ('lit_range',p[1],p[3])
 
 def p_lower_bound(p):
     '''lower_bound : expression'''
-    p[0] = p[1]
+    p[0] = ('lower_bound',p[1])
 
 def p_upper_bound(p):
     '''upper_bound : expression'''
-    p[0] = p[1]
+    p[0] = ('upper_bound',p[1])
 
 def p_reference_mode(p):
     '''reference_mode : REF mode'''
-    p[0] = p[2]
+    p[0] = ('ref_mode',p[1],p[2])
 
 def p_composite_mode(p):
     '''composite_mode : string_mode 
@@ -163,7 +163,7 @@ def p_composite_mode(p):
 
 def p_string_mode(p):
     '''string_mode : CHARS LBRACKET string_length RBRACKET'''
-    p[0] = p[3]
+    p[0] = ('string',p[3])
 
 def p_string_length(p):
     '''string_length : integer_literal'''
@@ -171,7 +171,7 @@ def p_string_length(p):
 
 def p_array_mode(p):
     '''array_mode : ARRAY LBRACKET index_mode_list RBRACKET element_mode'''
-    p[0] = (p[3],p[5])
+    p[0] = ('array_mode',p[1],p[3],p[5])
 
 def p_index_mode_list(p):
     '''index_mode_list : index_mode
@@ -444,6 +444,16 @@ def p_do_action(p):
                  | DO many_action_statement OD
                  | DO OD
                  '''
+    if (len(p) == 3):
+        p[0] = (p[1],p[2])
+    elif (len(p) == 4):
+        p[0] = (p[1],p[2],p[3])
+    elif (len(p) == 5):
+        p[0] = (p[1],p[2],p[4])
+    else:
+        p[0] = (p[1],p[2],p[4],p[5])
+
+
 
 def p_control_part(p):
     '''control_part : for_control while_control
@@ -451,7 +461,7 @@ def p_control_part(p):
                     | while_control'''
     if(len(p) == 3):
         p[0] = (p[1], p[2])
-    elif(len(p) == 2):
+    else:
         #POSSIVELMENTE ERRADO
         p[0] = p[1]
 
@@ -705,7 +715,7 @@ def p_result_spec(p):
 def p_result_attribute(p):
     '''result_attribute : LOC'''
     p[0] = p[1]
-    
+
 def p_error(p):
     print("Syntax error in input!")
 
