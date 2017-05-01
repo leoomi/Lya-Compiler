@@ -75,18 +75,21 @@ class Statement(AST):
 class Initialization(AST):
     _fields = ['expression']
 
+class Declaration(AST):
+    _fields = ['identifier_list', 'mode', 'initialization']
+    
 class SynonymDefinition(AST):
     _fields = ['identifier_list', 'mode', 'constant_expression']
 
 class ModeDefinition(AST):
     _fields = ['identifier_list', 'mode']
 
-class Mode(AST):
+class DiscreteMode(AST):
     _fields = ['type']
 
-class RangeMode(Mode):
+class RangeMode(DiscreteMode):
     def __init__(self):
-        self._fields = super._fields + ['literal_range']
+        self._fields = super._fields + ['discrete_mode', 'literal_range']
 
 class LiteralRange(AST):
     _fields = ['lower_bound', 'upper_bound']
@@ -124,7 +127,7 @@ class Variable(AST):
     _fields = ['name', 'value', 'type', 'lineno']
 
 class Constant(AST):
-    _fields = ['value', 'type']
+    _fields = ['type', 'value']
 
 class ValueArrayElement(AST):
     _fields = ['array_primitive_value', 'expression_list']
@@ -147,10 +150,6 @@ class RelationalOperator(AST):
 
 class Operand1(AST):
     _fields = ['operand1', 'operator2', 'operand2']
-
-#Arithmetic additive ou string concatenation
-class Operator2(AST):
-    _fields = ['type', 'value']
 
 class Operand2(AST):
     _fields = ['operand2', 'arithmetic_mult_op', 'operand3']

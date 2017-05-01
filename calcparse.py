@@ -45,9 +45,9 @@ def p_declaration(p):
     '''declaration : identifier_list mode 
                    | identifier_list mode initialization'''
     if(len(p) == 3):
-        p[0] = ('declaration', p[1], p[2])
+        p[0] = Declaration(p[1], p[2], None)
     else:
-        p[0] = ('declaration', p[1], p[2], p[3])
+        p[0] = Declaration(p[1], p[2], p[3])
 
 def p_initalization(p):
     '''initialization : ASSIGN expression'''
@@ -77,9 +77,9 @@ def p_synonym_definition(p):
     '''synonym_definition : identifier_list ASSIGN constant_expression
                           | identifier_list mode ASSIGN constant_expression'''
     if(len(p) == 4):
-        p[0] = ('syn_def',p[1],p[3])
+        p[0] = SynonymDefinition(p[1], None, p[3])
     else:
-        p[0] = ('syn_def',p[1],p[4],p[2])
+        p[0] = SynonymDefinition(p[1], p[2], p[4])
 
 def p_constant_expression(p):
     '''constant_expression : expression'''
@@ -99,7 +99,7 @@ def p_newmode_list(p):
 
 def p_mode_definition(p): 
     '''mode_definition : identifier_list ASSIGN mode'''
-    p[0] = ('mode_def',p[1],p[3])
+    p[0] = ModeDefinition(p[1],p[3])
 
 def p_mode(p):
     '''mode : mode_name
@@ -117,20 +117,20 @@ def p_discrete_mode(p):
 
 def p_integer_mode(p):
     '''integer_mode : INT'''
-    p[0] = ('int',p[1])
+    p[0] = DiscreteMode('int')
 
 def p_boolean_mode(p):
     '''boolean_mode : BOOL'''
-    p[0] = ('bool',p[1])
+    p[0] = DiscreteMode('bool')
 
 def p_character_mode(p):
     '''character_mode : CHAR'''
-    p[0] = ('char',p[1])
+    p[0] = DiscreteMode('char',p[1])
 
 def p_discrete_range_mode(p):
     '''discrete_range_mode : discrete_mode_name LPAREN literal_range RPAREN
                            | discrete_mode LPAREN literal_range RPAREN'''
-    p[0] = ('disc_range_mode',p[1], p[3])
+    p[0] = RangeMode('range', p[1], p[3])
 
 def p_mode_name(p):
     '''mode_name : ID'''
@@ -142,7 +142,7 @@ def p_discrete_mode_name(p):
 
 def p_literal_range(p):
     '''literal_range : lower_bound COLON upper_bound'''
-    p[0] = ('lit_range',p[1],p[3])
+    p[0] = LiteralRange(p[1], p[3])
 
 def p_lower_bound(p):
     '''lower_bound : expression'''
@@ -154,7 +154,7 @@ def p_upper_bound(p):
 
 def p_reference_mode(p):
     '''reference_mode : REF mode'''
-    p[0] = ('ref_mode',p[1],p[2])
+    p[0] = ('ref_mode',p[1], p[2])
 
 def p_composite_mode(p):
     '''composite_mode : string_mode 
@@ -163,7 +163,7 @@ def p_composite_mode(p):
 
 def p_string_mode(p):
     '''string_mode : CHARS LBRACKET string_length RBRACKET'''
-    p[0] = ('string',p[3])
+    p[0] = StringMode('string',p[3])
 
 def p_string_length(p):
     '''string_length : integer_literal'''
@@ -171,7 +171,7 @@ def p_string_length(p):
 
 def p_array_mode(p):
     '''array_mode : ARRAY LBRACKET index_mode_list RBRACKET element_mode'''
-    p[0] = ('array_mode',p[1],p[3],p[5])
+    p[0] = ArrayMode('array',p[3],p[5])
 
 def p_index_mode_list(p):
     '''index_mode_list : index_mode
@@ -206,7 +206,7 @@ def p_dereferenced_reference(p):
 
 def p_string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
-    p[0] = ('string_elem', p[1], p[3])
+    p[0] = StringElement(p[1], p[3])
 
 def p_start_element(p):
     '''start_element : integer_expression'''
@@ -214,7 +214,7 @@ def p_start_element(p):
 
 def p_string_slice(p):
     '''string_slice : string_location LBRACKET left_element COLON right_element RBRACKET'''
-    p[0] = ('string_slice',p[1], p[3], p[5])
+    p[0] = StringSlice(p[1], p[3], p[5])
 
 def p_string_location(p):
     '''string_location : ID'''
@@ -230,7 +230,7 @@ def p_right_element(p):
 
 def p_array_element(p):
     '''array_element : array_location LBRACKET expression_list RBRACKET'''
-    p[0] = ('array_element', p[1], p[3])
+    p[0] = ArrayElement(p[1], p[3])
 
 def p_expression_list(p):
     '''expression_list : expression
@@ -242,7 +242,7 @@ def p_expression_list(p):
 
 def p_array_slice(p):
     '''array_slice : array_location LBRACKET lower_bound COLON upper_bound RBRACKET'''
-    p[0] = ('array_slice', p[1], p[3], p[5])
+    p[0] = ArraySlice(p[1], p[3], p[5])
 
 def p_array_location(p):
     '''array_location : location'''
@@ -265,36 +265,36 @@ def p_literal(p):
 
 def p_integer_literal(p):
     '''integer_literal :  ICONST'''
-    p[0] = Constant(p[1], 'int')
+    p[0] = Constant('int', p[1])
 
 def p_boolean_literal(p):
     '''boolean_literal : FALSE 
                        | TRUE'''
-    p[0] = Constant(p[1], "bool")
+    p[0] = Constant("bool", p[1])
 
 def p_character_literal(p):
     '''character_literal : CCONST
                          | APOSTH CARET LPAREN ICONST RPAREN APOSTH'''
     if(len(p) == 2):
-        p[0] = Constant(p[1], "char")
+        p[0] = Constant("char", p[1])
     else:
-        p[0] = Constant(p[4], "char")
+        p[0] = Constant("char", p[4])
 
 def p_empty_literal(p):
     '''empty_literal : NULL'''
-    p[0] = Constant(p[1], "null")
+    p[0] = Constant("null", p[1])
 
 def p_character_string_literal(p):
     '''character_string_literal : SCONST'''
-    p[0] = Constant(p[1], "chars")
+    p[0] = Constant("chars", p[1])
 
 def p_value_array_element(p):
     '''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
-    p[0] = ("value_array",p[1],p[3])
+    p[0] = ValueArrayElement(p[1],p[3])
 
 def p_value_array_slice(p):
     '''value_array_slice : array_primitive_value LBRACKET ICONST COLON ICONST RBRACKET'''
-    p[0] = ("val_array_slice",p[1],p[3],p[5])
+    p[0] = ValueArraySlice(p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
     '''array_primitive_value : primitive_value'''
@@ -317,9 +317,9 @@ def p_conditional_expression(p):
     '''conditional_expression : IF boolean_expression then_expression else_expression FI
                               | IF boolean_expression then_expression elsif_expression else_expression FI'''
     if(len(p) == 6):
-        p[0] = ('cond_exp',p[2],p[3],p[4])
+        p[0] = ConditionalExpression(p[2],p[3],p[4])
     else:
-        p[0] = ('cond_exp',p[2],p[3],p[5],p[4])
+        p[0] = ConditionalExpression(p[2],p[3],p[5],p[4])
 
 
 def p_boolean_expression(p):
@@ -338,17 +338,17 @@ def p_elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
     if (len(p) == 4): 
-        p[0] = ('elsif',p[2],p[3])
+        p[0] = ElsifExpression(None, p[2],p[3])
     else:
-        p[0] = ('elsif',p[3],p[4],p[1])
+        p[0] = ElsifExpression(p[1], p[3],p[4])
 
 def p_operand0(p):
     '''operand0 : operand1
                 | operand0 operator1 operand1'''
     if(len(p) == 2):
-        p[0] = ('operand0',p[1])
+        p[0] = Operand0(None, p[1], None)
     else:
-        p[0] = ('operand0',p[3],p[1],p[2])
+        p[0] = Operand0(p[1],p[2],p[3])
 
 def p_operator1(p):
     '''operator1 : relational_operator
@@ -364,19 +364,19 @@ def p_relational_operator(p):
                            | GE 
                            | LS 
                            | LE'''
-    p[0] = p[1]
+    p[0] = RelationalOperator(p[1])
     
 def p_membership_operator(p):
     '''membership_operator : IN'''
-    p[0] = p[1]
+    p[0] = RelationalOperator(p[1])
 
 def p_operand1(p):
     '''operand1 : operand2
                 | operand1 operator2 operand2'''
     if (len(p) == 2):
-        p[0] = ('operand1',p[1])
+        p[0] = Operand1(p[1])
     else:
-        p[0] = ('operand1',p[3],p[1],p[2])
+        p[0] = Operand1(p[1], p[2], p[3])
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
@@ -396,9 +396,9 @@ def p_operand2(p):
     '''operand2 : operand3
                 | operand2 arithmetic_multiplicative_operator operand3'''
     if (len(p) == 2):
-        p[0] = ('operand2',p[1])
+        p[0] = Operand2(None, None, p[1])
     else:
-        p[0] = ('operand2',p[3],p[1],p[2])
+        p[0] = Operand2(p[1],p[2],p[3])
 
 def p_arithmetic_multiplicative_operator(p):
     '''arithmetic_multiplicative_operator : TIMES 
