@@ -70,10 +70,7 @@ class Program(AST):
     _fields = ['stmts']
 
 class Statement(AST):
-    _fields = ['type']
-
-class Initialization(AST):
-    _fields = ['expression']
+    _fields = ['sort']
 
 class Declaration(AST):
     _fields = ['identifier_list', 'mode', 'initialization']
@@ -94,11 +91,11 @@ class RangeMode(DiscreteMode):
 class LiteralRange(AST):
     _fields = ['lower_bound', 'upper_bound']
 
-class StringMode(Mode):
+class StringMode(ModeDefinition):
     def __init__(self):
         self._fields = super._fields + ['string_length']
 
-class ArrayMode(Mode):
+class ArrayMode(ModeDefinition):
     def __init__(self):
         self._fields = super._fields + ['index_mode_list', 'element_mode']
 
@@ -144,10 +141,6 @@ class ElsifExpression(AST):
 class Operand0(AST):
     _fields = ['operand0', 'operator1', 'operand1']
 
-#Relational operator (>, <, and, or, etc) ou Membership Operator (só IN)
-class RelationalOperator(AST):
-    _fields = ['type' ,'value']
-
 class Operand1(AST):
     _fields = ['operand1', 'operator2', 'operand2']
 
@@ -164,15 +157,15 @@ class DoAction(AST):
     _fields = ['control_part', 'many_action_statement']
 
 class ControlPart(AST):
-    _fields = ['for_control', 'while_control']
+    _fields = ['control', 'while_control']
 
 class StepEnumeration(AST):
-    _fields = ['loop_counter', 'assignment_symbol', 'start_value', 'step_value', 'end_value']
+    _fields = ['loop_counter', 'assignment_symbol', 'start_value', 'step_value','down', 'end_value']
 
 class AssignmentAction(AST):
     _fields = ['location', 'assigning_operator', 'expression']
 
-class AssignmentOperator(AST):
+class AssigningOperator(AST):
     _fields = ['closed_dyadic_operator', 'assignment_symbol']
 
 class IfAction(AST):
@@ -185,13 +178,10 @@ class ElseClause(AST):
     _fields = ['many_action_statement', 'boolean_expression', 'then_clause', 'else_clause']
 
 class RangeEnumeration(AST):
-    _fields = ['loop_counter', 'discrete_mode']
+    _fields = ['loop_counter', 'down', 'discrete_mode']
 
 class ProcedureCall(AST):
-    _fields = ['parameter_list']
-
-class ReturnAction(AST):
-    _fields = ['result']
+    _fields = ['id','parameter_list']
 
 class BuiltinCall(AST):
     _fields = ['builtin_name', 'parameter_list']
