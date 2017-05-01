@@ -55,6 +55,7 @@ class NodeVisitor(object):
         This examines the node to see if it has _fields, is a list,
         or can be further traversed.
         """
+        print(node)
         for field in getattr(node,"_fields"):
             value = getattr(node,field,None)
             if isinstance(value, list) or isinstance(value,tuple):

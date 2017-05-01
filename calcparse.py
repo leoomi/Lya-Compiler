@@ -11,7 +11,7 @@ tokens = Lyalex().tokens
 
 def p_program(p):
     'program : statement_list'
-    p[0] = p[1]
+    p[0] = Program(p[1])
 
 def p_statement_list(p):
     '''statement_list : statement 
@@ -31,7 +31,7 @@ def p_statement(p):
 
 def p_declaration_statement(p):
     '''declaration_statement : DCL declaration_list SEMICOL'''
-    p[0] = ('dcl', p[2])
+    p[0] = Statement('dcl', **{'dcl_list': p[2]} )
 
 def p_declaration_list(p):
     '''declaration_list : declaration 
@@ -63,7 +63,7 @@ def p_identifier_list(p):
 
 def p_synonym_statement(p):
     '''synonym_statement : SYN synonym_list SEMICOL'''
-    p[0] = ('syn', p[2])
+    p[0] = Statement('syn',**{"syn_list": p[2]})
 
 def p_synonym_list(p):
     '''synonym_list : synonym_definition
@@ -87,7 +87,7 @@ def p_constant_expression(p):
 
 def p_newmode_statement(p): 
     '''newmode_statement : TYPE newmode_list SEMICOL'''
-    p[0] = ('newmode_statement',p[1],p[2])
+    p[0] = Statement('newmode_statement',**{"type":p[1],"newmode_list":p[2]})
 
 def p_newmode_list(p):
     '''newmode_list : mode_definition
@@ -433,9 +433,9 @@ def p_action_statement(p):
     '''action_statement : label_id COLON action SEMICOL
                         | action SEMICOL'''
     if (len(p) == 5):
-        p[0] = ('action_statement',p[3],p[1])
+        p[0] = Statement('action_statement',**{"action":p[3],"label_id":p[1]})
     else:
-        p[0] = ('action_statement',p[1])
+        p[0] = Statement('action_statement',**{"action":p[1],"label_id":None})
 
 
 def p_label_id(p):
@@ -664,7 +664,7 @@ def p_builtin_name(p):
     
 def p_procedure_statement(p):
     '''procedure_statement : label_id COLON procedure_definition SEMICOL'''
-    p[0] = ('procedure_statement',p[1], p[3])
+    p[0] = Statement('procedure_statement',**{"label_id":p[1],"proc_def":p[3]})
     
 def p_procedure_definition(p):
     '''procedure_definition : PROC LPAREN RPAREN SEMICOL END
@@ -730,6 +730,8 @@ def p_error(p):
 parser = yacc.yacc()
 parser.lexer = lex.lex(object=Lyalex())
 
+visitor = NodeVisitor()
+
 while True:
     try:
         s = input('calc > ')
@@ -737,4 +739,6 @@ while True:
         break
     if not s: continue
     result = parser.parse(s)
-    print(result)
+    visit = visitor.visit(result)
+    print(visit)
+
