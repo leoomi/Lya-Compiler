@@ -202,11 +202,11 @@ def p_location(p):
 
 def p_dereferenced_reference(p):
     '''dereferenced_reference : location ARROW'''
-    p[0] = p[1]
+    p[0] = ('dereferenced_ref',p[1],p[2])
 
 def p_string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
-    p[0] = (p[1],p[3])
+    p[0] = ('string_elem', p[1], p[3])
 
 def p_start_element(p):
     '''start_element : integer_expression'''
@@ -214,11 +214,11 @@ def p_start_element(p):
 
 def p_string_slice(p):
     '''string_slice : string_location LBRACKET left_element COLON right_element RBRACKET'''
-    p[0] = (p[1], p[3], p[5])
+    p[0] = ('string_slice',p[1], p[3], p[5])
 
 def p_string_location(p):
     '''string_location : ID'''
-    p[0] = p[1]
+    p[0] = ('string_loc',p[1])
 
 def p_left_element(p):
     '''left_element : integer_expression'''
@@ -230,7 +230,7 @@ def p_right_element(p):
 
 def p_array_element(p):
     '''array_element : array_location LBRACKET expression_list RBRACKET'''
-    p[0] = (p[1], p[3])
+    p[0] = ('array_element', p[1], p[3])
 
 def p_expression_list(p):
     '''expression_list : expression
@@ -242,7 +242,7 @@ def p_expression_list(p):
 
 def p_array_slice(p):
     '''array_slice : array_location LBRACKET lower_bound COLON upper_bound RBRACKET'''
-    p[0] = (p[1], p[3], p[5])
+    p[0] = ('array_slice', p[1], p[3], p[5])
 
 def p_array_location(p):
     '''array_location : location'''
@@ -288,14 +288,13 @@ def p_character_string_literal(p):
     '''character_string_literal : SCONST'''
     p[0] = Constant(p[1], "chars")
 
-
 def p_value_array_element(p):
     '''value_array_element : array_primitive_value LBRACKET expression_list RBRACKET'''
-    p[0] = (p[1],p[3])
+    p[0] = ("value_array",p[1],p[3])
 
 def p_value_array_slice(p):
     '''value_array_slice : array_primitive_value LBRACKET ICONST COLON ICONST RBRACKET'''
-    p[0] = (p[1],p[3],p[5])
+    p[0] = ("val_array_slice",p[1],p[3],p[5])
 
 def p_array_primitive_value(p):
     '''array_primitive_value : primitive_value'''
@@ -318,9 +317,9 @@ def p_conditional_expression(p):
     '''conditional_expression : IF boolean_expression then_expression else_expression FI
                               | IF boolean_expression then_expression elsif_expression else_expression FI'''
     if(len(p) == 6):
-        p[0] = (p[2],p[3],p[4])
+        p[0] = ('cond_exp',p[2],p[3],p[4])
     else:
-        p[0] = (p[2],p[3],p[5],p[4])
+        p[0] = ('cond_exp',p[2],p[3],p[5],p[4])
 
 
 def p_boolean_expression(p):
@@ -339,17 +338,17 @@ def p_elsif_expression(p):
     '''elsif_expression : ELSIF boolean_expression then_expression
                         | elsif_expression ELSIF boolean_expression then_expression'''
     if (len(p) == 4): 
-        p[0] = (p[2],p[3])
+        p[0] = ('elsif',p[2],p[3])
     else:
-        p[0] = (p[3],p[4],p[1])
+        p[0] = ('elsif',p[3],p[4],p[1])
 
 def p_operand0(p):
     '''operand0 : operand1
                 | operand0 operator1 operand1'''
     if(len(p) == 2):
-        p[0] = (p[1])
+        p[0] = ('operand0',p[1])
     else:
-        p[0] = (p[3],p[1],p[2])
+        p[0] = ('operand0',p[3],p[1],p[2])
 
 def p_operator1(p):
     '''operator1 : relational_operator
@@ -375,9 +374,9 @@ def p_operand1(p):
     '''operand1 : operand2
                 | operand1 operator2 operand2'''
     if (len(p) == 2):
-        p[0] = (p[1])
+        p[0] = ('operand1',p[1])
     else:
-        p[0] = (p[3],p[1],p[2])
+        p[0] = ('operand1',p[3],p[1],p[2])
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
@@ -397,9 +396,9 @@ def p_operand2(p):
     '''operand2 : operand3
                 | operand2 arithmetic_multiplicative_operator operand3'''
     if (len(p) == 2):
-        p[0] = (p[1])
+        p[0] = ('operand2',p[1])
     else:
-        p[0] = (p[3],p[1],p[2])
+        p[0] = ('operand2',p[3],p[1],p[2])
 
 def p_arithmetic_multiplicative_operator(p):
     '''arithmetic_multiplicative_operator : TIMES 
@@ -411,9 +410,9 @@ def p_operand3(p):
     '''operand3 : monadic_operator operand4
                 | operand4'''
     if (len(p) == 3):
-        p[0] = (p[2], p[1])
+        p[0] = ('operand3',p[2], p[1])
     else:
-        p[0] = (p[1])
+        p[0] = ('operand3',p[1])
 
 def p_monadic_operator(p):
     '''monadic_operator : MINUS
@@ -428,88 +427,20 @@ def p_operand4(p):
 
 def p_referenced_location(p):
     '''referenced_location : ARROW location'''
-    p[0] = p[2]
+    p[0] = ('ref_loc',p[2])
 
 def p_action_statement(p):
     '''action_statement : label_id COLON action SEMICOL
                         | action SEMICOL'''
     if (len(p) == 5):
-        p[0] = (p[3],p[1])
+        p[0] = ('action_statement',p[3],p[1])
     else:
-        p[0] = (p[1])
+        p[0] = ('action_statement',p[1])
 
-def p_do_action(p):
-    '''do_action : DO control_part SEMICOL OD
-                 | DO control_part SEMICOL many_action_statement OD
-                 | DO many_action_statement OD
-                 | DO OD
-                 '''
-    if (len(p) == 3):
-        p[0] = (p[1],p[2])
-    elif (len(p) == 4):
-        p[0] = (p[1],p[2],p[3])
-    elif (len(p) == 5):
-        p[0] = (p[1],p[2],p[4])
-    else:
-        p[0] = (p[1],p[2],p[4],p[5])
-
-
-
-def p_control_part(p):
-    '''control_part : for_control while_control
-                    | for_control
-                    | while_control'''
-    if(len(p) == 3):
-        p[0] = (p[1], p[2])
-    else:
-        #POSSIVELMENTE ERRADO
-        p[0] = p[1]
-
-def p_for_control(p):
-    '''for_control : FOR iteration'''
-    p[0] = p[2]
-
-def p_interation(p):
-    '''iteration : step_enumeration
-                 | range_enumeration'''
-    p[0] = p[1]
-
-def p_step_enumeration(p):
-    '''step_enumeration : loop_counter assignment_symbol start_value step_value DOWN end_value
-                        | loop_counter assignment_symbol start_value DOWN end_value
-                        | loop_counter assignment_symbol start_value step_value end_value
-                        | loop_counter assignment_symbol start_value end_value'''
-    if(len(p) == 7):
-        p[0] = (p[1], p[2], p[3], p[6], p[4], p[5])
-    elif(len(p) == 6):
-        p[0] = (p[1], p[2], p[3], p[4], p[5])
-    elif(len(p) == 5):
-        p[0] = (p[1], p[2], p[3], p[4])
-    
-
-def p_loop_counter(p):
-    '''loop_counter : ID'''
-    p[0] = p[1]
-
-def p_start_value(p):
-    '''start_value : discrete_expression'''
-    p[0] = p[1]
-
-def p_step_value(p):
-    '''step_value : BY integer_expression'''
-    p[0] = p[2]
-
-def p_end_value(p):
-    '''end_value : TO discrete_expression'''
-    p[0] = p[2]
-
-def p_discrete_expression(p):
-    '''discrete_expression :  expression'''
-    p[0] = p[1]
 
 def p_label_id(p):
     '''label_id : ID'''
-    p[0] = p[1]
+    p[0] = ('id',p[1])
 
 def p_action(p):
     '''action : bracketed_action
@@ -527,15 +458,15 @@ def p_bracketed_action(p):
 
 def p_assignment_action(p):
     '''assignment_action : location assigning_operator expression'''
-    p[0] = (p[1], p[2], p[3])
+    p[0] = ('assignment_action',p[1], p[2], p[3])
 
 def p_assigning_operator(p):
     '''assigning_operator : closed_dyadic_operator assignment_symbol
                           | assignment_symbol'''
     if (len(p) == 3):
-        p[0] = (p[2],p[1])
+        p[0] = ('assigning_operator',p[2],p[1])
     else:
-        p[0] = p[1]
+        p[0] = ('assigning_operator',p[1])
 
 def p_closed_dyadic_operator(p):
     '''closed_dyadic_operator : arithmetic_additive_operator
@@ -551,17 +482,17 @@ def p_if_action(p):
     '''if_action : IF boolean_expression then_clause else_clause FI
                  | IF boolean_expression then_clause FI'''
     if (len(p) == 6):
-        p[0] = (p[2],p[3],p[4])
+        p[0] = ('if_action',p[2],p[3],p[4])
     else:
-        p[0] = (p[2],p[3])
+        p[0] = ('if_action',p[2],p[3])
 
 def p_then_clause(p):
     '''then_clause : THEN many_action_statement
                    | THEN'''
     if (len(p) == 3):
-        p[0] = (p[1],p[2])
+        p[0] = ('then_clause',p[2])
     else:
-        p[0] = (p[1],None)
+        p[0] = ('then_clause')
 
 def p_many_action_statement(p):
     '''many_action_statement : action_statement
@@ -577,21 +508,90 @@ def p_else_clause(p):
                    | ELSIF boolean_expression then_clause else_clause
                    | ELSIF boolean_expression then_clause'''
     if (len(p) == 2):
-        p[0] = p[1]
+        p[0] = ('else_clause')
     elif (len(p) == 3):
-        p[0] = p[2]
+        p[0] = ('else_clause',p[2])
     elif (len(p) == 4):
-        p[0] = (p[2],p[3])
+        p[0] = ('else_clause',p[2],p[3])
     else:
-        p[0] = (p[2],p[3],p[4])
+        p[0] = ('else_clause',p[2],p[3],p[4])
+
+def p_do_action(p):
+    '''do_action : DO control_part SEMICOL OD
+                 | DO control_part SEMICOL many_action_statement OD
+                 | DO many_action_statement OD
+                 | DO OD
+                 '''
+    if (len(p) == 3):
+        p[0] = ('do_action')
+    elif (len(p) == 4):
+        p[0] = ('do_action',p[2])
+    elif (len(p) == 5):
+        p[0] = ('do_action',p[2])
+    else:
+        p[0] = ('do_action',p[2],p[4])
+
+
+
+def p_control_part(p):
+    '''control_part : for_control while_control
+                    | for_control
+                    | while_control'''
+    if(len(p) == 3):
+        p[0] = ('control_part', p[1], p[2])
+    else:
+        p[0] = ('control_part', p[1])
+
+def p_for_control(p):
+    '''for_control : FOR iteration'''
+    p[0] = ('for_control',p[2])
+
+def p_interation(p):
+    '''iteration : step_enumeration
+                 | range_enumeration'''
+    p[0] = p[1]
+
+def p_step_enumeration(p):
+    '''step_enumeration : loop_counter assignment_symbol start_value step_value DOWN end_value
+                        | loop_counter assignment_symbol start_value DOWN end_value
+                        | loop_counter assignment_symbol start_value step_value end_value
+                        | loop_counter assignment_symbol start_value end_value'''
+    if(len(p) == 7):
+        p[0] = ('step_enumeration',p[1], p[2], p[3], p[4], p[5], p[6])
+    elif(len(p) == 6):
+        p[0] = ('step_enumeration',p[1], p[2], p[3], p[4], p[5])
+    elif(len(p) == 5):
+        p[0] = ('step_enumeration',p[1], p[2], p[3], p[4])
+    
+
+def p_loop_counter(p):
+    '''loop_counter : ID'''
+    p[0] = p[1]
+
+def p_start_value(p):
+    '''start_value : discrete_expression'''
+    p[0] = ('start_value',p[1])
+
+def p_step_value(p):
+    '''step_value : BY integer_expression'''
+    p[0] = ('step_value',p[1],p[2])
+
+def p_end_value(p):
+    '''end_value : TO discrete_expression'''
+    p[0] = ('end_value',p[2])
+
+def p_discrete_expression(p):
+    '''discrete_expression :  expression'''
+    p[0] = p[1]
+
 
 def p_range_enumeration(p):
     '''range_enumeration : loop_counter IN discrete_mode
                          | loop_counter DOWN IN discrete_mode'''
     if(len(p) == 4):
-        p[0] = (p[1], None, p[3])
+        p[0] = ('range_enumeration', p[1], p[3])
     else:
-        p[0] = (p[1], 'DOWN', p[4])
+        p[0] = ('range_enumeration', p[1], p[2], p[4])
 
 def p_while_control(p):
     '''while_control : WHILE boolean_expression'''
@@ -606,17 +606,17 @@ def p_procedure_call(p):
     '''procedure_call : ID LPAREN RPAREN
                       | ID LPAREN parameter_list RPAREN'''
     if(len(p) == 4):
-        p[0] = p[1]
+        p[0] = ('procedure_call',p[1])
     else:
-        p[0] = (p[1], p[3])
+        p[0] = ('procedure_call',p[1], p[3])
 
 def p_parameter_list(p):
     '''parameter_list : parameter
-                      | parameter COMMA parameter_list'''
+                      | parameter_list COMMA parameter'''
     if (len(p) == 2):
         p[0] = [p[1]]
     else:
-        p[0] = [p[1]] + p[3]
+        p[0] = p[1] + [p[3]]
 
 def p_parameter(p):
     '''parameter : expression'''
@@ -624,19 +624,19 @@ def p_parameter(p):
 
 def p_exit_action(p):
     '''exit_action : EXIT label_id'''
-    p[0] = p[2]
+    p[0] = ('exit_action',p[2])
     
 def p_return_action(p):
     '''return_action : RETURN
                      | RETURN result'''
     if(len(p) == 2):
-        p[0] = (p[1], None)
+        p[0] = (p[1])
     else:
         p[0] = (p[1], p[2])
     
 def p_result_action(p):
     '''result_action : RESULT result'''
-    p[0] = p[2]
+    p[0] = ('result_action',p[2])
     
 def p_result(p):
     '''result : expression'''
@@ -646,9 +646,9 @@ def p_builtin_call(p):
     '''builtin_call : builtin_name LPAREN RPAREN
                     | builtin_name LPAREN parameter_list RPAREN'''
     if(len(p) == 3):
-        p[0] = p[1]
+        p[0] = ('builtin_call',p[1])
     else:
-        p[0] = (p[1], p[3])
+        p[0] = ('builtin_call',p[1], p[3])
     
 def p_builtin_name(p):
     '''builtin_name : ABS
@@ -664,7 +664,7 @@ def p_builtin_name(p):
     
 def p_procedure_statement(p):
     '''procedure_statement : label_id COLON procedure_definition SEMICOL'''
-    p[0] = (p[1], p[3])
+    p[0] = ('procedure_statement',p[1], p[3])
     
 def p_procedure_definition(p):
     '''procedure_definition : PROC LPAREN RPAREN SEMICOL END
@@ -675,10 +675,17 @@ def p_procedure_definition(p):
                             | PROC LPAREN formal_parameter_list RPAREN SEMICOL statement_list END
                             | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL END
                             | PROC LPAREN formal_parameter_list RPAREN result_spec SEMICOL statement_list END'''
-   
-    #CUIDADO COM ESSE CARA  
-    p[0] = (p[3], p[5], p[7])
-        
+
+    if (len(p) == 6): 
+    	p[0] = ('procedure_definition')
+    elif (len(p) == 7): 
+    	p[0] = ('procedure_definition',p[3],p[4],p[5])
+    elif (len(p) == 8): 
+    	p[0] = ('procedure_definition',p[3],p[4],p[5],p[6])
+    else:
+    	p[0] = ('procedure_definition',p[3],p[5],p[7])
+	
+
         
 def p_formal_parameter_list(p):
     '''formal_parameter_list : formal_parameter
@@ -690,31 +697,31 @@ def p_formal_parameter_list(p):
         
 def p_formal_parameter(p):
     '''formal_parameter : identifier_list parameter_spec'''
-    p[0] = (p[1], p[2])
+    p[0] = ('formal_parameter',p[1], p[2])
         
 def p_paremeter_spec(p):
     '''parameter_spec : mode
                       | mode parameter_attribute'''
     if(len(p) == 2):
-        p[0] = p[1]
+        p[0] = ('parameter_spec',p[1])
     else:
-        p[0] = (p[1], p[2])
+        p[0] = ('parameter_spec',p[1], p[2])
         
 def p_paremeter_attribute(p):
     '''parameter_attribute : LOC'''
-    p[0] = p[1]
+    p[0] = ('parameter_attribute',p[1])
 
 def p_result_spec(p):
     '''result_spec : RETURNS LPAREN mode RPAREN
-                          | RETURNS LPAREN mode result_attribute RPAREN'''
+                   | RETURNS LPAREN mode result_attribute RPAREN'''
     if(len(p) == 5):
-        p[0] = p[3]
+        p[0] = ('result_spec',p[3])
     else:
-        p[0] = (p[3], p[4])
+        p[0] = ('result_spec',p[3], p[4])
 
 def p_result_attribute(p):
     '''result_attribute : LOC'''
-    p[0] = p[1]
+    p[0] = ('result_attribute',p[1])
 
 def p_error(p):
     print("Syntax error in input!")

@@ -34,11 +34,6 @@ class Lyalex:
         'RBRACKET',
         'LBRACKET',
         'COLON',
-        'PLUSEQ',
-        'MINUSEQ',
-        'TIMESEQ',
-        'DIVIDEEQ',
-        'CONCATEQ', 
         'ARROW',
         'CARET',
         'APOSTH',
@@ -112,11 +107,6 @@ class Lyalex:
     t_LBRACKET = r'\['
     t_RBRACKET = r'\]'
     t_COLON = r':'
-    t_PLUSEQ = r'\+='
-    t_MINUSEQ = r'\-='
-    t_TIMESEQ = r'\*='
-    t_DIVIDEEQ = r'/='
-    t_CONCATEQ = r'&='
     t_ARROW = r'->'
     t_APOSTH = r'\''
     t_CARET = r'\^'
