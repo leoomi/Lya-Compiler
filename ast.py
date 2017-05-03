@@ -43,6 +43,9 @@ class NodeVisitor(object):
         print("Constant: ", node.type)
         print("Constant: ", node.value)
 
+    def visit_Identifier(self, node):
+        print("Identifier: ", node.label)
+
     def visit_Declaration(self, node):
         print(node)
         print("Declaration: ", node.identifier_list)
@@ -58,7 +61,7 @@ class NodeVisitor(object):
         Execute a method of the form visit_NodeName(node) where
         NodeName is the name of the class of a particular node.
         """
-        pdb.set_trace()
+        #pdb.set_trace()
         if node:
             method = 'visit_' + node.__class__.__name__
             visitor = getattr(self, method, self.generic_visit)
@@ -161,6 +164,21 @@ class ConditionalExpression(AST):
 class ElsifExpression(AST):
     _fields = ['elsif_expression', 'boolean_expression', 'then_expression']
 
+#NOVAS CLASSES AQUI!
+
+class RelationalOperation(AST):
+    _fields = ['left', 'operator', 'right']
+
+class BinaryOperation(AST):
+    _fields = ['left', 'operator', 'right']
+
+class UnaryOperation(AST):
+    _fields = ['operator','operand']
+
+class Identifier(AST):
+    _fields = ['label']
+
+# cabo
 class Operand0(AST):
     _fields = ['operand0', 'operator1', 'operand1']
 

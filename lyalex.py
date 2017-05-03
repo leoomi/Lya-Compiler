@@ -179,7 +179,8 @@ read(x);
 print("fatorial of" , x, " = ", fat(x));
 '''
 def main():
-    # Open file
+
+	# Open file
     file = sys.argv[1]
     data = open(file)
 

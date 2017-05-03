@@ -57,9 +57,9 @@ def p_identifier_list(p):
     '''identifier_list : ID 
                        | identifier_list COMMA ID'''
     if(len(p) == 2):
-        p[0] = [p[1]]
+        p[0] = [Identifier(p[1])]
     else:
-        p[0] = p[1] + [p[3]]
+        p[0] = p[1] + [Identifier(p[3])]
 
 def p_synonym_statement(p):
     '''synonym_statement : SYN synonym_list SEMICOL'''
@@ -134,11 +134,11 @@ def p_discrete_range_mode(p):
 
 def p_mode_name(p):
     '''mode_name : ID'''
-    p[0] = p[1]
+    p[0] = Identifier(p[1])
 
 def p_discrete_mode_name(p):
     '''discrete_mode_name : ID'''
-    p[0] = p[1]
+    p[0] = Identifier(p[1])
 
 def p_literal_range(p):
     '''literal_range : lower_bound COLON upper_bound'''
@@ -218,7 +218,7 @@ def p_string_slice(p):
 
 def p_string_location(p):
     '''string_location : ID'''
-    p[0] = p[1]
+    p[0] =  Identifier(p[1])
 
 def p_left_element(p):
     '''left_element : integer_expression'''
@@ -346,9 +346,9 @@ def p_operand0(p):
     '''operand0 : operand1
                 | operand0 operator1 operand1'''
     if(len(p) == 2):
-        p[0] = Operand0(None, p[1], None)
+        p[0] = p[1]
     else:
-        p[0] = Operand0(p[1],p[2],p[3])
+        p[0] = RelationalOperation(p[1],p[2],p[3])
 
 def p_operator1(p):
     '''operator1 : relational_operator
@@ -374,9 +374,9 @@ def p_operand1(p):
     '''operand1 : operand2
                 | operand1 operator2 operand2'''
     if (len(p) == 2):
-        p[0] = Operand1(None,None,p[1])
+        p[0] = p[1]
     else:
-        p[0] = Operand1(p[1], p[2], p[3])
+        p[0] = BinaryOperation(p[1], p[2], p[3])
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
@@ -396,9 +396,9 @@ def p_operand2(p):
     '''operand2 : operand3
                 | operand2 arithmetic_multiplicative_operator operand3'''
     if (len(p) == 2):
-        p[0] = Operand2(None, None, p[1])
+        p[0] = p[1]
     else:
-        p[0] = Operand2(p[1],p[2],p[3])
+        p[0] = BinaryOperation(p[1],p[2],p[3])
 
 def p_arithmetic_multiplicative_operator(p):
     '''arithmetic_multiplicative_operator : TIMES 
@@ -410,9 +410,9 @@ def p_operand3(p):
     '''operand3 : monadic_operator operand4
                 | operand4'''
     if (len(p) == 3):
-        p[0] = Operand3(p[2], p[1])
+        p[0] = UnaryOperation(p[1], p[2])
     else:
-        p[0] = Operand3(None, p[1])
+        p[0] = p[1]
 
 def p_monadic_operator(p):
     '''monadic_operator : MINUS
@@ -440,7 +440,7 @@ def p_action_statement(p):
 
 def p_label_id(p):
     '''label_id : ID'''
-    p[0] = p[1]
+    p[0] = Identifier(p[1])
 
 def p_action(p):
     '''action : bracketed_action
@@ -567,7 +567,7 @@ def p_step_enumeration(p):
 
 def p_loop_counter(p):
     '''loop_counter : ID'''
-    p[0] = p[1]
+    p[0] =  Identifier(p[1])
 
 def p_start_value(p):
     '''start_value : discrete_expression'''
@@ -607,9 +607,9 @@ def p_procedure_call(p):
     '''procedure_call : ID LPAREN RPAREN
                       | ID LPAREN parameter_list RPAREN'''
     if(len(p) == 4):
-        p[0] = ProcedureCall(p[1], None)
+        p[0] = ProcedureCall(Identifier(p[1]), None)
     else:
-        p[0] = ProcedureCall(p[1], p[3])
+        p[0] = ProcedureCall(Identifier(p[1]), p[3])
 
 def p_parameter_list(p):
     '''parameter_list : parameter
