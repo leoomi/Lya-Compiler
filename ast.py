@@ -1,3 +1,4 @@
+import pdb
 
 class AST(object):
     """
@@ -36,12 +37,28 @@ class NodeVisitor(object):
     tree = parse(txt)
     VisitOps().visit(tree)
     """
+    
+    def visit_Constant(self, node):
+        print(node)
+        print("Constant: ", node.type)
+        print("Constant: ", node.value)
 
+    def visit_Declaration(self, node):
+        print(node)
+        print("Declaration: ", node.identifier_list)
+        self.visit(node.mode)
+        self.visit(node.initialization)
+
+    def visit_DiscreteMode(self, node):
+        print(node)
+        print("Discrete Mode: ",node.type)
+        
     def visit(self,node):
         """
         Execute a method of the form visit_NodeName(node) where
         NodeName is the name of the class of a particular node.
         """
+        pdb.set_trace()
         if node:
             method = 'visit_' + node.__class__.__name__
             visitor = getattr(self, method, self.generic_visit)
@@ -72,32 +89,38 @@ class Program(AST):
 class Statement(AST):
     _fields = ['sort']
 
+class DeclarationStatement(AST):
+    _fields = ['dcl_list']
+    
 class Declaration(AST):
     _fields = ['identifier_list', 'mode', 'initialization']
+
+class SynonymStatement(AST):
+    _fields = ['syn_list']
     
 class SynonymDefinition(AST):
     _fields = ['identifier_list', 'mode', 'constant_expression']
 
+class NewmodeDefinition(AST):
+    _fields = ['newmode_list']
+    
 class ModeDefinition(AST):
     _fields = ['identifier_list', 'mode']
 
 class DiscreteMode(AST):
     _fields = ['type']
 
-class RangeMode(DiscreteMode):
-    def __init__(self):
-        self._fields = super._fields + ['discrete_mode', 'literal_range']
+class RangeMode(AST):
+    _fields = ['discrete_mode', 'literal_range']
 
 class LiteralRange(AST):
     _fields = ['lower_bound', 'upper_bound']
 
-class StringMode(ModeDefinition):
-    def __init__(self):
-        self._fields = super._fields + ['string_length']
+class StringMode(AST):
+    _fields = ['string_length']
 
-class ArrayMode(ModeDefinition):
-    def __init__(self):
-        self._fields = super._fields + ['index_mode_list', 'element_mode']
+class ArrayMode(AST):
+    _fields = ['index_mode_list', 'element_mode']
 
 class StringElement(AST):
     _fields = ['string_location', 'start_element']
@@ -187,10 +210,13 @@ class BuiltinCall(AST):
     _fields = ['builtin_name', 'parameter_list']
 
 class ProcedureStatement(AST):
+    _fields = ['label_id', 'proc_def']
+    
+class ProcedureStatement(AST):
     _fields = ['label_id', 'procedure_definition']
 
 class ProcedureDefinition(AST):
-    _fields = ['formal_paramenter_list', 'result_spec', 'statement_list']
+    _fields = ['formal_parameter_list', 'result_spec', 'statement_list']
 
 class FormalParameter(AST):
     _fields = ['identifier_list', 'parameter_spec']
