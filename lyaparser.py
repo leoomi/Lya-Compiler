@@ -206,7 +206,7 @@ def p_dereferenced_reference(p):
 
 def p_string_element(p):
     '''string_element : string_location LBRACKET start_element RBRACKET'''
-    p[0] = StringElement(p[1], p[3])
+    p[0] = Element(p[1], p[3])
 
 def p_start_element(p):
     '''start_element : integer_expression'''
@@ -214,7 +214,7 @@ def p_start_element(p):
 
 def p_string_slice(p):
     '''string_slice : string_location LBRACKET left_element COLON right_element RBRACKET'''
-    p[0] = StringSlice(p[1], p[3], p[5])
+    p[0] = Slice(p[1], p[3], p[5])
 
 def p_string_location(p):
     '''string_location : ID'''
@@ -230,7 +230,7 @@ def p_right_element(p):
 
 def p_array_element(p):
     '''array_element : array_location LBRACKET expression_list RBRACKET'''
-    p[0] = ArrayElement(p[1], p[3])
+    p[0] = Element(p[1], p[3])
 
 def p_expression_list(p):
     '''expression_list : expression
@@ -242,7 +242,7 @@ def p_expression_list(p):
 
 def p_array_slice(p):
     '''array_slice : array_location LBRACKET lower_bound COLON upper_bound RBRACKET'''
-    p[0] = ArraySlice(p[1], p[3], p[5])
+    p[0] = Slice(p[1], p[3], p[5])
 
 def p_array_location(p):
     '''array_location : location'''
