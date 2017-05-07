@@ -57,9 +57,9 @@ def p_identifier_list(p):
     '''identifier_list : ID 
                        | identifier_list COMMA ID'''
     if(len(p) == 2):
-        p[0] = [Identifier(p[1])]
+        p[0] = [Identifier(p[1], None)]
     else:
-        p[0] = p[1] + [Identifier(p[3])]
+        p[0] = p[1] + [Identifier(p[3], None)]
 
 def p_synonym_statement(p):
     '''synonym_statement : SYN synonym_list SEMICOL'''
@@ -134,11 +134,11 @@ def p_discrete_range_mode(p):
 
 def p_mode_name(p):
     '''mode_name : ID'''
-    p[0] = Identifier(p[1])
+    p[0] = Identifier(p[1], None)
 
 def p_discrete_mode_name(p):
     '''discrete_mode_name : ID'''
-    p[0] = Identifier(p[1])
+    p[0] = Identifier(p[1], None)
 
 def p_literal_range(p):
     '''literal_range : lower_bound COLON upper_bound'''
@@ -218,7 +218,7 @@ def p_string_slice(p):
 
 def p_string_location(p):
     '''string_location : ID'''
-    p[0] =  Identifier(p[1])
+    p[0] =  Identifier(p[1], None)
 
 def p_left_element(p):
     '''left_element : integer_expression'''
@@ -265,20 +265,20 @@ def p_literal(p):
 
 def p_integer_literal(p):
     '''integer_literal :  ICONST'''
-    p[0] = Constant('IConst', p[1])
+    p[0] = Constant('int', p[1])
 
 def p_boolean_literal(p):
     '''boolean_literal : FALSE 
                        | TRUE'''
-    p[0] = Constant("BoolLit", p[1])
+    p[0] = Constant("bool", p[1])
 
 def p_character_literal(p):
     '''character_literal : CCONST
                          | APOSTH CARET LPAREN ICONST RPAREN APOSTH'''
     if(len(p) == 2):
-        p[0] = Constant("CharLit", p[1])
+        p[0] = Constant("char", p[1])
     else:
-        p[0] = Constant("CharLit(code)", p[4])
+        p[0] = Constant("char", p[4])
 
 def p_empty_literal(p):
     '''empty_literal : NULL'''
@@ -317,9 +317,9 @@ def p_conditional_expression(p):
     '''conditional_expression : IF boolean_expression then_expression else_expression FI
                               | IF boolean_expression then_expression elsif_expression else_expression FI'''
     if(len(p) == 6):
-        p[0] = ConditionalExpression(p[2],p[3],None,p[4])
+        p[0] = ConditionalExpression(p[2],p[3],None,p[4],'bool')
     else:
-        p[0] = ConditionalExpression(p[2],p[3],p[5],p[4])
+        p[0] = ConditionalExpression(p[2],p[3],p[5],p[4],'bool')
 
 
 def p_boolean_expression(p):
@@ -348,7 +348,7 @@ def p_operand0(p):
     if(len(p) == 2):
         p[0] = p[1]
     else:
-        p[0] = RelationalOperation(p[1],p[2],p[3])
+        p[0] = RelationalOperation(p[1],p[2],p[3], None)
 
 def p_operator1(p):
     '''operator1 : relational_operator
@@ -376,7 +376,7 @@ def p_operand1(p):
     if (len(p) == 2):
         p[0] = p[1]
     else:
-        p[0] = BinaryOperation(p[1], p[2], p[3])
+        p[0] = BinaryOperation(p[1], p[2], p[3], None)
 
 def p_operator2(p):
     '''operator2 : arithmetic_additive_operator
@@ -398,7 +398,7 @@ def p_operand2(p):
     if (len(p) == 2):
         p[0] = p[1]
     else:
-        p[0] = BinaryOperation(p[1],p[2],p[3])
+        p[0] = BinaryOperation(p[1],p[2],p[3], None)
 
 def p_arithmetic_multiplicative_operator(p):
     '''arithmetic_multiplicative_operator : TIMES 
@@ -410,7 +410,7 @@ def p_operand3(p):
     '''operand3 : monadic_operator operand4
                 | operand4'''
     if (len(p) == 3):
-        p[0] = UnaryOperation(p[1], p[2])
+        p[0] = UnaryOperation(p[1], p[2], None)
     else:
         p[0] = p[1]
 
@@ -440,7 +440,7 @@ def p_action_statement(p):
 
 def p_label_id(p):
     '''label_id : ID'''
-    p[0] = Identifier(p[1])
+    p[0] = Identifier(p[1], None)
 
 def p_action(p):
     '''action : bracketed_action
@@ -567,7 +567,7 @@ def p_step_enumeration(p):
 
 def p_loop_counter(p):
     '''loop_counter : ID'''
-    p[0] =  Identifier(p[1])
+    p[0] =  Identifier(p[1], None)
 
 def p_start_value(p):
     '''start_value : discrete_expression'''
@@ -607,9 +607,9 @@ def p_procedure_call(p):
     '''procedure_call : ID LPAREN RPAREN
                       | ID LPAREN parameter_list RPAREN'''
     if(len(p) == 4):
-        p[0] = ProcedureCall(Identifier(p[1]), None)
+        p[0] = ProcedureCall(Identifier(p[1], None), None)
     else:
-        p[0] = ProcedureCall(Identifier(p[1]), p[3])
+        p[0] = ProcedureCall(Identifier(p[1], None), p[3])
 
 def p_parameter_list(p):
     '''parameter_list : parameter

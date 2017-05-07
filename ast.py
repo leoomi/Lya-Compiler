@@ -19,16 +19,17 @@ class SymbolTable(dict):
         return None
 
 class ExprType(object):
-    def __init__(self, kind, operators, default) 
+    def __init__(self, kind, operators, default):
         self.type = kind
         self.operators = operators
         self.default = default
-
 
 int_type = ExprType("int", ["+","-","*","/","%",">",">=","<","<="], 0)
 bool_type = ExprType("bool", ["&&","||","!"], True)
 char_type = ExprType("char", ["&","==","!="], "")
 string_type = ExprType("string", ["&","==","!="], "")
+
+expr_type_list = {'int': int_type, 'bool': bool_type, 'char': char_type, 'string': string_type}
 
 class Environment(object):
     def __init__(self):
@@ -102,6 +103,14 @@ class NodeVisitor(object):
     tree = parse(txt)
     VisitOps().visit(tree)
     """
+
+    def visit_Program(self, node):
+        self.environment.push(node)
+        node.environment = self.environment
+        node.symtab = self.environment.peek()
+
+        for stmt in node.stmts:
+            self.visit(stmt)
     
     def visit_Constant(self, node):
         print(node)
@@ -110,6 +119,9 @@ class NodeVisitor(object):
 
     def visit_Identifier(self, node):
         print("Identifier: ", node.label)
+        
+        if(self.environment.lookup(node.label) == None):
+            print("Variable not declared: ", node.label)
 
     def visit_Declaration(self, node):
         print(node)
@@ -117,10 +129,54 @@ class NodeVisitor(object):
         self.visit(node.mode)
         self.visit(node.initialization)
 
+        init = None
+        error = False
+        if(node.initialization != None):
+            if(node.initialization.type == node.mode.type):
+                init = expr_type_list[node.initialization.type].default
+            else:
+                print("Conflicting types")
+                error = True
+
+        if(not error):
+            for i in node.identifier_list:
+                if(self.environment.peek().lookup(i.label) == None):
+                    self.environment.peek().add(i.label, node.mode.type)
+                else:
+                    print("Multiply defined variable: ", i.label)
+
+    def visit_AssignmentAction(self, node):
+        self.visit(node.location)
+        self.visit(node.expression)
+
+        if(location.label == expression.type):
+        
+        if(node.assigning_operator.closed_dyadic_operator != None):
+            asasdsa
+        else:
+    
     def visit_DiscreteMode(self, node):
         print(node)
         print("Discrete Mode: ",node.type)
+
+    def visit_BinaryOperation(self, node):
+        print(node)
+        self.visit(node.left)
+        print("Binary Operation: ", node.operator)
+        self.visit(node.right)
         
+        expr_type = None
+        for key, i in expr_type_list.items():
+            if(node.operator in i.operators):
+                expr_type = i
+        
+        if(expr_type != None):
+            print(node.left.type, node.right.type)
+            if(expr_type.type != node.left.type or expr_type.type != node.right.type):
+                print("Conflicting types")
+            else:
+                node.type = expr_type.type
+            
     def visit(self,node):
         """
         Execute a method of the form visit_NodeName(node) where
@@ -150,7 +206,9 @@ class NodeVisitor(object):
             elif isinstance(value, AST):
                 self.visit(value)
         
-
+    def __init__(self):
+        self.environment = Environment()
+                
 class Program(AST):
     _fields = ['stmts']
 
@@ -191,10 +249,10 @@ class ArrayMode(AST):
     _fields = ['index_mode_list', 'element_mode']
 
 class Element(AST):
-    _fields = ['string_location', 'start_element']
+    _fields = ['label', 'start_element']
 
 class Slice(AST):
-    _fields = ['string_location', 'left_element', 'right_element']
+    _fields = ['label', 'left_element', 'right_element']
 
 class StringElement(AST):
     _fields = ['string_location', 'start_element']
@@ -230,7 +288,7 @@ class ValueArraySlice(AST):
     _fields = ['array_primitive_value', 'lower_bound', 'upper_bound']
 
 class ConditionalExpression(AST):
-    _fields = ['boolean_expression', 'then_expression', 'elsif_expression', 'else_expression']
+    _fields = ['boolean_expression', 'then_expression', 'elsif_expression', 'else_expression', 'type']
 
 class ElsifExpression(AST):
     _fields = ['elsif_expression', 'boolean_expression', 'then_expression']
@@ -238,16 +296,16 @@ class ElsifExpression(AST):
 #NOVAS CLASSES AQUI!
 
 class RelationalOperation(AST):
-    _fields = ['left', 'operator', 'right']
+    _fields = ['left', 'operator', 'right', 'type']
 
 class BinaryOperation(AST):
-    _fields = ['left', 'operator', 'right']
+    _fields = ['left', 'operator', 'right', 'type']
 
 class UnaryOperation(AST):
-    _fields = ['operator','operand']
+    _fields = ['operator','operand', 'type']
 
 class Identifier(AST):
-    _fields = ['label']
+    _fields = ['label', 'type']
 
 # cabo
 class Operand0(AST):

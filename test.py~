@@ -1,0 +1,10 @@
+import ast as ast
+
+class Teste():
+    def __init__(self):
+        self.a = 1
+        self.b = 2
+
+a = ast.Program(1, **{'teste': 1})
+print(a.stmts)
+print(a.dsfjaskjdlfhsadjf)
