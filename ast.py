@@ -135,6 +135,28 @@ class NodeVisitor(object):
             if(node.initialization.type == node.mode.type):
                 init = expr_type_list[node.initialization.type].default
             else:
+                print("Conflicting types in declaration: ", node.initialization.type, node.mode.type)
+                error = True
+
+        if(not error):
+            for i in node.identifier_list:
+                if(self.environment.peek().lookup(i.label) == None):
+                    self.environment.peek().add(i.label, node.mode.type)
+                else:
+                    print("Multiply defined variable: ", i.label)
+
+    def visit_SynonymDefinition(self, node):
+        print(node)
+        print("Synonym: ", node.identifier_list)
+        self.visit(node.mode)
+        self.visit(node.initialization)
+
+        init = None
+        error = False
+        if(node.initialization != None):
+            if(node.initialization.type == node.mode.type):
+                init = expr_type_list[node.initialization.type].default
+            else:
                 print("Conflicting types")
                 error = True
 
@@ -145,16 +167,65 @@ class NodeVisitor(object):
                 else:
                     print("Multiply defined variable: ", i.label)
 
+
+
     def visit_AssignmentAction(self, node):
         self.visit(node.location)
         self.visit(node.expression)
-
-        if(location.label == expression.type):
         
-        if(node.assigning_operator.closed_dyadic_operator != None):
-            asasdsa
+        label = None
+        #get leftside label
+        if(hasattr(node.location,'label')):
+            label = node.location.label
+        elif(hasattr(node.location.id,'label')):
+            label = node.location.id.label
+        #builtin call
         else:
-    
+            label = node.location.builtin_name
+
+        #pdb.set_trace()
+        
+        exp = None
+        if(node.expression.type != None):
+            exp = node.expression.type
+        else:
+            exp = self.environment.lookup(node.expression.label)
+        #check if label and expression share same type
+        if(self.environment.lookup(label) != exp):
+            print("Conflicting types for assignment action: ", label, self.environment.lookup(label), exp)
+       
+        else:
+            if(node.assigning_operator.closed_dyadic_operator != None):
+                expr_type = None
+                for key, i in expr_type_list.items():
+                    if(node.assigning_operator.closed_dyadic_operator in i.operators):
+                        expr_type = i
+            
+                if(expr_type != None):
+                    if(expr_type.type != self.environment.lookup(label) or expr_type.type != exp):
+                        print("Conflicting types for assignment action: ", label, self.environment.lookup(label), expr_type.type, exp)
+           
+    def visit_UnaryOperation(self, node):
+        self.visit(node.operand)
+        print(node)
+        exp = None
+        if(node.operand.type != None):
+            exp = node.operand.type
+        else:
+            exp = self.environment.lookup(node.operand.label)
+        
+        expr_type = None
+        for key, i in expr_type_list.items():
+            if(node.operator in i.operators):
+                expr_type = i
+
+        if (expr_type.type != exp):
+            print("Conflicting type for Unary Operation: ", exp, expr_type.type)
+        
+        node.type = expr_type.type;
+
+
+
     def visit_DiscreteMode(self, node):
         print(node)
         print("Discrete Mode: ",node.type)
@@ -169,14 +240,39 @@ class NodeVisitor(object):
         for key, i in expr_type_list.items():
             if(node.operator in i.operators):
                 expr_type = i
-        
+        #get exp type
+        exp = None
+        exp2 = None
+
+        if(node.left.type != None):
+            exp = node.left.type
+        else:
+            exp = self.environment.lookup(node.left.label)
+        if(node.right.type != None):
+            exp2 = node.right.type
+        else:
+            exp2 = self.environment.lookup(node.right.label)
+
         if(expr_type != None):
-            print(node.left.type, node.right.type)
-            if(expr_type.type != node.left.type or expr_type.type != node.right.type):
-                print("Conflicting types")
+            print(exp, exp2)
+            if(expr_type.type != exp or expr_type.type != exp2):
+                print("Conflicting types in binary operation: ", exp, expr_type.type, exp2)
             else:
                 node.type = expr_type.type
-            
+    
+    def visit_IfAction(self, node):
+        self.visit(node.boolean_expression)
+        
+        self.environment.push(None)
+        self.visit(node.then_clause) 
+        self.environment.pop()
+        
+        if (node.else_clause != None):
+            self.environment.push(None)
+            self.visit(node.else_clause)
+            self.environment.pop()
+
+
     def visit(self,node):
         """
         Execute a method of the form visit_NodeName(node) where
@@ -225,7 +321,7 @@ class SynonymStatement(AST):
     _fields = ['syn_list']
     
 class SynonymDefinition(AST):
-    _fields = ['identifier_list', 'mode', 'constant_expression']
+    _fields = ['identifier_list', 'mode', 'initialization']
 
 class NewmodeDefinition(AST):
     _fields = ['newmode_list']
