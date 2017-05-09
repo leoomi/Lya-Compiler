@@ -273,6 +273,23 @@ class NodeVisitor(object):
             self.environment.pop()
 
 
+    def visit_ConditionalExpression(self, node):
+        self.visit(node.boolean_expression)
+        self.visit(node.then_expression)
+        thenType = node.then_expression.type
+        if(node.elsif_expression != None):
+            self.visit(node.elsif_expression)
+            elsifType = node.elsif_expression.type
+        else:
+            elsifType = thenType
+        self.visit(node.else_expression)
+        elseType = node.else_expression.type
+
+        if (thenType != elsifType or thenType != elseType or elsifType != elseType):
+            print("Conflicting types in conditional expression (ternaryop): ", thenType, elsifType, elseType)
+        else:
+            node.type = thenType
+
     def visit(self,node):
         """
         Execute a method of the form visit_NodeName(node) where
