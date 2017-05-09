@@ -272,6 +272,20 @@ class NodeVisitor(object):
             self.visit(node.else_clause)
             self.environment.pop()
 
+    #Check return type
+    #Add label id to symbol table
+    #Create Scope for procedure_definition
+    def visit_ProcedureStatement(self, node):
+        self.environment.peek().add(node.label_id.label, node.procedure_definition.result_spec.mode.type)
+        self.visit(node.label_id)
+        self.environment.push(node.label_id.label)
+        self.visit(node.procedure_definition)
+        self.environment.pop()
+
+    def visit_ProcedureDefinition(self, node):
+        for param in formal_parameter_list: 
+            self.environment.peek().add(param.identifier.label, param)
+            
 
     def visit_ConditionalExpression(self, node):
         self.visit(node.boolean_expression)
@@ -469,9 +483,6 @@ class ProcedureCall(AST):
 class BuiltinCall(AST):
     _fields = ['builtin_name', 'parameter_list']
 
-class ProcedureStatement(AST):
-    _fields = ['label_id', 'proc_def']
-    
 class ProcedureStatement(AST):
     _fields = ['label_id', 'procedure_definition']
 
