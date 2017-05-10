@@ -276,6 +276,8 @@ class NodeVisitor(object):
     #Add label id to symbol table
     #Create Scope for procedure_definition
     def visit_ProcedureStatement(self, node):
+        print("ProcedureStatement: ", node.label_id.label)
+        print("ProcedureStatement: ", node.procedure_definition)
         type = None if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type  
         self.environment.peek().add(node.label_id.label, type)
         self.visit(node.label_id)
@@ -287,24 +289,25 @@ class NodeVisitor(object):
         if node.formal_parameter_list != None:
             for param in node.formal_parameter_list: 
                 self.environment.peek().add(param.identifier.label, param.parameter_spec.mode + param.parameter_attribute)
-        pdb.set_trace()
-        for statement in node.statement_list:
-            if hasattr(statement, 'action'):
-                if statement.action.__class__.__name__ == "ReturnAction":
-                    exp = None
-                    if(statement.action.value.type != None):
-                        exp = statement.action.value.type
-                    else:
-                        exp = self.environment.lookup(statement.action.value.label)
+        #pdb.set_trace()
+        if node.statement_list != None:
+            for statement in node.statement_list:
+                if hasattr(statement, 'action'):
+                    if statement.action.__class__.__name__ == "ReturnAction":
+                        exp = None
+                        if(statement.action.value.type != None):
+                            exp = statement.action.value.type
+                        else:
+                            exp = self.environment.lookup(statement.action.value.label)
 
-                    func = self.environment.lookup(self.environment.peek().decl)
+                        func = self.environment.lookup(self.environment.peek().decl)
 
-                    print(exp, func)
-                    if(exp != func):
-                        print("Conflicting return type: ", exp, func)
+                        print(exp, func)
+                        if(exp != func):
+                            print("Conflicting return type: ", exp, func)
 
                 self.visit(statement)
-            
+
     def visit_ConditionalExpression(self, node):
         self.visit(node.boolean_expression)
         self.visit(node.then_expression)
@@ -372,7 +375,7 @@ class SynonymStatement(AST):
 class SynonymDefinition(AST):
     _fields = ['identifier_list', 'mode', 'initialization']
 
-class NewmodeDefinition(AST):
+class NewmodeStatement(AST):
     _fields = ['newmode_list']
     
 class ModeDefinition(AST):

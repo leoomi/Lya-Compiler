@@ -8,4 +8,4 @@ while True:
     if not s: continue
     result = parser.parse(s)
     visit = visitor.visit(result)
-    print(visit)
+    
