@@ -276,17 +276,35 @@ class NodeVisitor(object):
     #Add label id to symbol table
     #Create Scope for procedure_definition
     def visit_ProcedureStatement(self, node):
-        self.environment.peek().add(node.label_id.label, node.procedure_definition.result_spec.mode.type)
+        type = None if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type  
+        self.environment.peek().add(node.label_id.label, type)
         self.visit(node.label_id)
         self.environment.push(node.label_id.label)
         self.visit(node.procedure_definition)
         self.environment.pop()
 
     def visit_ProcedureDefinition(self, node):
-        for param in formal_parameter_list: 
-            self.environment.peek().add(param.identifier.label, param)
-            
+        if node.formal_parameter_list != None:
+            for param in node.formal_parameter_list: 
+                self.environment.peek().add(param.identifier.label, param.parameter_spec.mode + param.parameter_attribute)
+        pdb.set_trace()
+        for statement in node.statement_list:
+            if hasattr(statement, 'action'):
+                if statement.action.__class__.__name__ == "ReturnAction":
+                    exp = None
+                    if(statement.action.value.type != None):
+                        exp = statement.action.value.type
+                    else:
+                        exp = self.environment.lookup(statement.action.value.label)
 
+                    func = self.environment.lookup(self.environment.peek().decl)
+
+                    print(exp, func)
+                    if(exp != func):
+                        print("Conflicting return type: ", exp, func)
+
+                self.visit(statement)
+            
     def visit_ConditionalExpression(self, node):
         self.visit(node.boolean_expression)
         self.visit(node.then_expression)
@@ -498,4 +516,5 @@ class ParameterSpec(AST):
 class ResultSpec(AST):
     _fields = ['mode', 'result_attribute']
 
-
+class ReturnAction(AST):
+    _fields = ['value']

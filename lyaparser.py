@@ -631,9 +631,9 @@ def p_return_action(p):
     '''return_action : RETURN
                      | RETURN result'''
     if(len(p) == 2):
-        p[0] = None
+        p[0] = ReturnAction(None)
     else:
-        p[0] = p[2]
+        p[0] = ReturnAction(p[2])
     
 def p_result_action(p):
     '''result_action : RESULT result'''
