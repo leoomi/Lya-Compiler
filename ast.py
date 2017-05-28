@@ -1,5 +1,8 @@
 import pdb
 
+def bk():
+    pdb.set_trace()
+
 class SymbolTable(dict):
     """
         Class representing a symbol table. It should
@@ -167,9 +170,8 @@ class NodeVisitor(object):
                 else:
                     print("Multiply defined variable: ", i.label)
 
-
-
     def visit_AssignmentAction(self, node):
+        print("Assignment")
         self.visit(node.location)
         self.visit(node.expression)
         
@@ -191,6 +193,7 @@ class NodeVisitor(object):
         else:
             exp = self.environment.lookup(node.expression.label)
         #check if label and expression share same type
+        bk()
         if(self.environment.lookup(label) != exp):
             print("Conflicting types for assignment action: ", label, self.environment.lookup(label), exp)
        
@@ -278,8 +281,9 @@ class NodeVisitor(object):
     def visit_ProcedureStatement(self, node):
         print("ProcedureStatement: ", node.label_id.label)
         print("ProcedureStatement: ", node.procedure_definition)
-        type = None if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type  
-        self.environment.peek().add(node.label_id.label, type)
+        type = "Void" if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type
+
+        self.environment.add_root(node.label_id.label, type)
         self.visit(node.label_id)
         self.environment.push(node.label_id.label)
         self.visit(node.procedure_definition)
@@ -287,9 +291,13 @@ class NodeVisitor(object):
 
     def visit_ProcedureDefinition(self, node):
         if node.formal_parameter_list != None:
-            for param in node.formal_parameter_list: 
-                self.environment.peek().add(param.identifier.label, param.parameter_spec.mode + param.parameter_attribute)
-        #pdb.set_trace()
+            for param in node.formal_parameter_list:
+                for identifier in param.identifier_list:
+                    if(self.environment.peek().lookup(identifier.label) == None):
+                        self.environment.peek().add(identifier.label, param.parameter_spec.mode)
+                    else:
+                        print("Multiply defined variable: ", identifier.label)
+
         if node.statement_list != None:
             for statement in node.statement_list:
                 if hasattr(statement, 'action'):
