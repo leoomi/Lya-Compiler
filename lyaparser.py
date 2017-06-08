@@ -163,7 +163,7 @@ def p_composite_mode(p):
 
 def p_string_mode(p):
     '''string_mode : CHARS LBRACKET string_length RBRACKET'''
-    p[0] = StringMode(p[3])
+    p[0] = StringMode(p[3], 'string')
 
 def p_string_length(p):
     '''string_length : integer_literal'''
@@ -703,7 +703,7 @@ def p_formal_parameter_list(p):
     if(len(p) == 2):
         p[0] = [p[1]]
     else:
-        p[0] = p[1] + [p[2]]
+        p[0] = p[1] + [p[3]]
         
 def p_formal_parameter(p):
     '''formal_parameter : identifier_list parameter_spec'''

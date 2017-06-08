@@ -193,7 +193,6 @@ class NodeVisitor(object):
         else:
             exp = self.environment.lookup(node.expression.label)
         #check if label and expression share same type
-        bk()
         if(self.environment.lookup(label) != exp):
             print("Conflicting types for assignment action: ", label, self.environment.lookup(label), exp)
        
@@ -233,6 +232,10 @@ class NodeVisitor(object):
         print(node)
         print("Discrete Mode: ",node.type)
 
+    def visit_ProcedureCall(self, node):
+         if(self.environment.lookup(node.id.label) == None):
+            print("Function not declared: ", node.id.label)
+        
     def visit_BinaryOperation(self, node):
         print(node)
         self.visit(node.left)
@@ -247,19 +250,31 @@ class NodeVisitor(object):
         exp = None
         exp2 = None
 
-        if(node.left.type != None):
-            exp = node.left.type
+        if(hasattr(node.left, 'type')):
+            if(node.left.type != None):
+                exp = node.left.type
+            else:
+                exp = self.environment.lookup(node.left.label)
         else:
-            exp = self.environment.lookup(node.left.label)
-        if(node.right.type != None):
-            exp2 = node.right.type
+            if(node.left.__class__ == 'ProcedureCall'):
+                exp = self.environment.lookup(node.left.id)
+        if(hasattr(node.right, 'type')):
+            if(node.right.type != None):
+                exp = node.right.type
+            else:
+                exp = self.environment.lookup(node.right.label)
         else:
-            exp2 = self.environment.lookup(node.right.label)
+            if(node.right.type != None):
+                exp2 = node.right.type
+            else:
+                exp2 = self.environment.lookup(node.right.label)
 
         if(expr_type != None):
             print(exp, exp2)
             if(expr_type.type != exp or expr_type.type != exp2):
+                pdb.set_trace()
                 print("Conflicting types in binary operation: ", exp, expr_type.type, exp2)
+                exit()
             else:
                 node.type = expr_type.type
     
@@ -294,7 +309,7 @@ class NodeVisitor(object):
             for param in node.formal_parameter_list:
                 for identifier in param.identifier_list:
                     if(self.environment.peek().lookup(identifier.label) == None):
-                        self.environment.peek().add(identifier.label, param.parameter_spec.mode)
+                        self.environment.peek().add(identifier.label, param.parameter_spec.mode.type)
                     else:
                         print("Multiply defined variable: ", identifier.label)
 
@@ -399,7 +414,7 @@ class LiteralRange(AST):
     _fields = ['lower_bound', 'upper_bound']
 
 class StringMode(AST):
-    _fields = ['string_length']
+    _fields = ['string_length', 'type']
 
 class ArrayMode(AST):
     _fields = ['index_mode_list', 'element_mode']
