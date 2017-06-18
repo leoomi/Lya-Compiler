@@ -12,6 +12,7 @@ code = []
 def vis(node):
     global refs, sp, code
     
+    print(node)
     #visit recursively (DFS)
     if hasattr(node,"_fields"):
         for field in getattr(node,"_fields"):
@@ -27,7 +28,6 @@ def vis(node):
         print("Leaf node...")
 
     
-    print(node)
     if isinstance(node, Program):
         code.append(('end',))
 
@@ -69,11 +69,53 @@ def vis(node):
                 else:
                     code.append(('prv', 1))
     
-#    elif isinstance(node.initialization, BinaryOperation):
- #       if node.operator == "*":
+    elif isinstance(node, BinaryOperation) or isinstance(node, RelationalOperation):
+        if hasattr(node.left, "label"):
+            code.append(('ldv','ALTERAR',refs[node.left.label]))
+        elif hasattr(node.left, "value"):
+            code.append(('ldc', node.left.value))
+        if hasattr(node.right, "label"):
+            code.append(('ldv','ALTERAR',refs[node.right.label]))
+        elif hasattr(node.right, "value"):
+            code.append(('ldc', node.right.value))
 
+        if node.operator == "*":
+            code.append(('mul',))
+        elif node.operator == "+":
+            code.append(('add',))
+        elif node.operator == "-":
+            code.append(('sub',))
+        elif node.operator == "/":
+            code.append(('div',))
+        elif node.operator == "%":
+            code.append(('mod',))
+        elif node.operator == "&&":
+            code.append(('and',))
+        elif node.operator == "||":
+            code.append(('lor',))
+        elif node.operator == "<":
+            code.append(('les',))
+        elif node.operator == "<=":
+            code.append(('leq',))
+        elif node.operator == ">":
+            code.append(('grt',))
+        elif node.operator == ">=":
+            code.append(('gre',))
+        elif node.operator == "==":
+            code.append(('equ',))
+        elif node.operator == "!=":
+            code.append(('neq',))
+    
+    elif isinstance(node, UnaryOperation):
+        if hasattr(node.operand, "label"):
+            code.append(('ldv','ALTERAR',refs[node.operand.label]))
+        elif hasattr(node.operand, "value"):
+            code.append(('ldc', node.operand.value))
 
-
+        if node.operator == "!":
+            code.append(("not",))
+        if node.operator == "-":
+            code.append(("neg",))
 
 while True:
     try:
