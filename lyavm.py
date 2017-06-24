@@ -4,15 +4,15 @@ class LyaVM():
         #program memory
         P = prog
         #stack memory
-        M = {}
+        M = [0]*100000
         #display
-        D = {}
+        D = [0]*100
         #heap for string constants
         H = heap
         #program counter and stack pointer
         pc = 0 
         sp = 0
-        print(P, M, D, H, pc, sp) 
+        #print(P, M, D, H, pc, sp) 
         #Generate jumps with correct program Counter
         labels = {}
         for i in range(0,len(P)):
@@ -126,10 +126,10 @@ class LyaVM():
                 except:
                     M[sp] = M[sp]
             elif (P[pc][0] == 'rds'):
-                str=input()
+                strg=input()
                 adr=M[sp]
-                M[adr] = len(str)
-                for k in str:
+                M[adr] = len(strg)
+                for k in strg:
                     adr=adr+1
                     M[adr]=k
                 sp=sp-1
