@@ -27,6 +27,10 @@ class ExprType(object):
         self.operators = operators
         self.default = default
 
+class FunctionArgs():
+    def __init__(self, args):
+        self.args = args
+
 int_type = ExprType("int", ["+","-","*","/","%",">",">=","<","<="], 0)
 bool_type = ExprType("bool", ["&&","||","!"], True)
 char_type = ExprType("char", ["&","==","!="], "")
@@ -38,6 +42,7 @@ class Environment(object):
     def __init__(self):
         self.stack = []
         self.root = SymbolTable()
+        self.functions = {}
         self.stack.append(self.root)
         self.root.update({
             "int": int_type,
@@ -233,9 +238,27 @@ class NodeVisitor(object):
         print("Discrete Mode: ",node.type)
 
     def visit_ProcedureCall(self, node):
-         if(self.environment.lookup(node.id.label) == None):
+        if(self.environment.lookup(node.id.label) == None):
             print("Function not declared: ", node.id.label)
-        
+            exit()
+            
+        argList = []
+        for param in node.parameter_list:
+            if param.__class__.__name__ == 'Identifier':
+                argList.append(self.environment.lookup(param.label))
+            else:
+                self.visit(param)
+                argList.append(param.type)
+            
+        if not len(node.parameter_list) == len(self.environment.functions[(node.id.label)].args):
+            print("Wrong number of arguments for function: ", node.id.label)
+            exit()
+
+        if not argList == self.environment.functions[(node.id.label)].args:
+            print("conflicting types for procedure call: ", argList, ' ',self.environment.functions[(node.id.label)].args)
+
+        node.type = self.environment.lookup(node.id.label)
+         
     def visit_BinaryOperation(self, node):
         print(node)
         self.visit(node.left)
@@ -255,15 +278,11 @@ class NodeVisitor(object):
                 exp = node.left.type
             else:
                 exp = self.environment.lookup(node.left.label)
-        else:
+        '''else:
             if(node.left.__class__ == 'ProcedureCall'):
-                exp = self.environment.lookup(node.left.id)
+                exp = self.environment.lookup(node.left.id)'''
+        
         if(hasattr(node.right, 'type')):
-            if(node.right.type != None):
-                exp = node.right.type
-            else:
-                exp = self.environment.lookup(node.right.label)
-        else:
             if(node.right.type != None):
                 exp2 = node.right.type
             else:
@@ -297,22 +316,26 @@ class NodeVisitor(object):
         print("ProcedureStatement: ", node.label_id.label)
         print("ProcedureStatement: ", node.procedure_definition)
         type = "Void" if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type
-
         self.environment.add_root(node.label_id.label, type)
+        self.lastProcAdded = node.label_id.label
         self.visit(node.label_id)
         self.environment.push(node.label_id.label)
         self.visit(node.procedure_definition)
         self.environment.pop()
 
     def visit_ProcedureDefinition(self, node):
+        args = []
         if node.formal_parameter_list != None:
             for param in node.formal_parameter_list:
                 for identifier in param.identifier_list:
                     if(self.environment.peek().lookup(identifier.label) == None):
                         self.environment.peek().add(identifier.label, param.parameter_spec.mode.type)
+                        args.append(param.parameter_spec.mode.type)
                     else:
                         print("Multiply defined variable: ", identifier.label)
 
+        self.environment.functions[self.lastProcAdded] = FunctionArgs(args)
+        
         if node.statement_list != None:
             for statement in node.statement_list:
                 if hasattr(statement, 'action'):
@@ -353,7 +376,7 @@ class NodeVisitor(object):
         Execute a method of the form visit_NodeName(node) where
         NodeName is the name of the class of a particular node.
         """
-        #pdb.set_trace()
+
         if node:
             method = 'visit_' + node.__class__.__name__
             visitor = getattr(self, method, self.generic_visit)
