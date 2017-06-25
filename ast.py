@@ -31,7 +31,7 @@ class FunctionArgs():
     def __init__(self, args):
         self.args = args
 
-int_type = ExprType("int", ["+","-","*","/","%",">",">=","<","<="], 0)
+int_type = ExprType("int", ["+","-","*","/","%",">",">=","<","<=", "!=", "=="], 0)
 bool_type = ExprType("bool", ["&&","||","!"], True)
 char_type = ExprType("char", ["&","==","!="], "")
 string_type = ExprType("string", ["&","==","!="], "")
@@ -149,7 +149,11 @@ class NodeVisitor(object):
         if(not error):
             for i in node.identifier_list:
                 if(self.environment.peek().lookup(i.label) == None):
-                    self.environment.peek().add(i.label, node.mode.type)
+
+                    if(node.mode.__class__.__name__ == 'ArrayMode'):
+                        self.environment.peek().add(i.label, node.mode.element_mode.type)
+                    else:
+                        self.environment.peek().add(i.label, node.mode.type)
                 else:
                     print("Multiply defined variable: ", i.label)
 
@@ -174,26 +178,29 @@ class NodeVisitor(object):
                     self.environment.peek().add(i.label, node.mode.type)
                 else:
                     print("Multiply defined variable: ", i.label)
-
+        
+                    
     def visit_AssignmentAction(self, node):
         print("Assignment")
         self.visit(node.location)
         self.visit(node.expression)
-        
+
         label = None
         #get leftside label
-        if(hasattr(node.location,'label')):
+        if(node.location.__class__.__name__ == 'Element'):
+            label = node.location.label.label
+        elif(hasattr(node.location,'label')):
             label = node.location.label
         elif(hasattr(node.location.id,'label')):
             label = node.location.id.label
         #builtin call
         else:
             label = node.location.builtin_name
-
-        #pdb.set_trace()
         
         exp = None
-        if(node.expression.type != None):
+        if(node.expression.__class__.__name__ == 'Element'):
+            exp = self.environment.lookup(node.expression.label.label)
+        elif(node.expression.type != None):
             exp = node.expression.type
         else:
             exp = self.environment.lookup(node.expression.label)
@@ -231,13 +238,12 @@ class NodeVisitor(object):
         
         node.type = expr_type.type;
 
-
-
     def visit_DiscreteMode(self, node):
         print(node)
         print("Discrete Mode: ",node.type)
 
     def visit_ProcedureCall(self, node):
+        print('Procedure Call:', node.id.label)
         if(self.environment.lookup(node.id.label) == None):
             print("Function not declared: ", node.id.label)
             exit()
@@ -245,8 +251,10 @@ class NodeVisitor(object):
         argList = []
         for param in node.parameter_list:
             if param.__class__.__name__ == 'Identifier':
+                print('ProcCall param: ', self.environment.lookup(param.label))
                 argList.append(self.environment.lookup(param.label))
             else:
+                print('ProcCall param: ')
                 self.visit(param)
                 argList.append(param.type)
             
@@ -260,15 +268,15 @@ class NodeVisitor(object):
         node.type = self.environment.lookup(node.id.label)
          
     def visit_BinaryOperation(self, node):
-        print(node)
+        print("Binary Op")
         self.visit(node.left)
         print("Binary Operation: ", node.operator)
         self.visit(node.right)
         
-        expr_type = None
+        expr_type = []
         for key, i in expr_type_list.items():
             if(node.operator in i.operators):
-                expr_type = i
+                expr_type.append(i)
         #get exp type
         exp = None
         exp2 = None
@@ -278,6 +286,8 @@ class NodeVisitor(object):
                 exp = node.left.type
             else:
                 exp = self.environment.lookup(node.left.label)
+        elif(node.left.__class__.__name__ == 'Element'):
+            exp = self.environment.lookup(node.left.label.label)
         '''else:
             if(node.left.__class__ == 'ProcedureCall'):
                 exp = self.environment.lookup(node.left.id)'''
@@ -289,13 +299,17 @@ class NodeVisitor(object):
                 exp2 = self.environment.lookup(node.right.label)
 
         if(expr_type != None):
+            found = False
             print(exp, exp2)
-            if(expr_type.type != exp or expr_type.type != exp2):
-                pdb.set_trace()
-                print("Conflicting types in binary operation: ", exp, expr_type.type, exp2)
+            for i in expr_type:
+                if(i.type == exp or i.type == exp2):
+                    found = True
+                    node.type = i.type
+                    break
+                
+            if not found:
+                print("Conflicting types in binary operation: ", exp, node.operator, exp2)
                 exit()
-            else:
-                node.type = expr_type.type
     
     def visit_IfAction(self, node):
         self.visit(node.boolean_expression)
@@ -488,10 +502,10 @@ class ElsifExpression(AST):
     _fields = ['elsif_expression', 'boolean_expression', 'then_expression']
 
 #NOVAS CLASSES AQUI!
-
+'''
 class RelationalOperation(AST):
     _fields = ['left', 'operator', 'right', 'type']
-
+'''
 class BinaryOperation(AST):
     _fields = ['left', 'operator', 'right', 'type']
 

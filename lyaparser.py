@@ -348,7 +348,7 @@ def p_operand0(p):
     if(len(p) == 2):
         p[0] = p[1]
     else:
-        p[0] = RelationalOperation(p[1],p[2],p[3], None)
+        p[0] = BinaryOperation(p[1],p[2],p[3], None)
 
 def p_operator1(p):
     '''operator1 : relational_operator
