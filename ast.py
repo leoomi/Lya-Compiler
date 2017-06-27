@@ -1,7 +1,5 @@
 import pdb
-
-def bk():
-    pdb.set_trace()
+import copy
 
 class SymbolTable(dict):
     """
@@ -26,7 +24,7 @@ class ExprType(object):
         self.type = kind
         self.operators = operators
         self.default = default
-
+        
 class FunctionArgs():
     def __init__(self, args):
         self.args = args
@@ -48,7 +46,7 @@ class Environment(object):
             "int": int_type,
             "char": char_type,
             "string": string_type,
-            "bool": bool_type
+           "bool": bool_type
         })
     def push(self, enclosure):
         self.stack.append(SymbolTable(decl=enclosure))
@@ -127,9 +125,10 @@ class NodeVisitor(object):
 
     def visit_Identifier(self, node):
         print("Identifier: ", node.label)
-        
         if(self.environment.lookup(node.label) == None):
             print("Variable not declared: ", node.label)
+        else:
+            node.type = self.environment.lookup(node.label)
 
     def visit_Declaration(self, node):
         print(node)
@@ -149,16 +148,17 @@ class NodeVisitor(object):
         if(not error):
             for i in node.identifier_list:
                 if(self.environment.peek().lookup(i.label) == None):
-
                     if(node.mode.__class__.__name__ == 'ArrayMode'):
-                        self.environment.peek().add(i.label, node.mode.element_mode.type)
+                        pdb.set_trace()
+                        self.environment.peek().add(i.label, '[' + node.mode.element_mode.type + ']')
+                    elif(node.mode.type.__class__.__name__ == 'ExprType'):
+                        self.environment.peek().add(i.label, node.mode.type.type)
                     else:
                         self.environment.peek().add(i.label, node.mode.type)
                 else:
                     print("Multiply defined variable: ", i.label)
 
     def visit_SynonymDefinition(self, node):
-        print(node)
         print("Synonym: ", node.identifier_list)
         self.visit(node.mode)
         self.visit(node.initialization)
@@ -169,7 +169,7 @@ class NodeVisitor(object):
             if(node.initialization.type == node.mode.type):
                 init = expr_type_list[node.initialization.type].default
             else:
-                print("Conflicting types")
+                print("Conflicting types in synonym: ", node.initialization, node.mode.type)
                 error = True
 
         if(not error):
@@ -184,7 +184,7 @@ class NodeVisitor(object):
         print("Assignment")
         self.visit(node.location)
         self.visit(node.expression)
-
+        #pdb.set_trace()
         label = None
         #get leftside label
         if(node.location.__class__.__name__ == 'Element'):
@@ -204,10 +204,18 @@ class NodeVisitor(object):
             exp = node.expression.type
         else:
             exp = self.environment.lookup(node.expression.label)
+
+        if(self.environment.lookup(label).__class__.__name__ == 'ExprType'):
+            location = self.environment.lookup(label).type
+        else:
+            location = self.environment.lookup(label)
+
+        if(exp.__class__.__name__ == 'ExprType'):
+            exp = exp.type
+            
         #check if label and expression share same type
-        if(self.environment.lookup(label) != exp):
-            print("Conflicting types for assignment action: ", label, self.environment.lookup(label), exp)
-       
+        if(location != exp):
+            print("Conflicting types for assignment action: ", label, location, exp)
         else:
             if(node.assigning_operator.closed_dyadic_operator != None):
                 expr_type = None
@@ -216,8 +224,8 @@ class NodeVisitor(object):
                         expr_type = i
             
                 if(expr_type != None):
-                    if(expr_type.type != self.environment.lookup(label) or expr_type.type != exp):
-                        print("Conflicting types for assignment action: ", label, self.environment.lookup(label), expr_type.type, exp)
+                    if(expr_type.type != location or expr_type.type != exp):
+                        print("Conflicting types for assignment action: ", label, location, expr_type.type, exp)
            
     def visit_UnaryOperation(self, node):
         self.visit(node.operand)
@@ -249,6 +257,7 @@ class NodeVisitor(object):
             exit()
             
         argList = []
+ 
         for param in node.parameter_list:
             if param.__class__.__name__ == 'Identifier':
                 print('ProcCall param: ', self.environment.lookup(param.label))
@@ -328,7 +337,6 @@ class NodeVisitor(object):
     #Create Scope for procedure_definition
     def visit_ProcedureStatement(self, node):
         print("ProcedureStatement: ", node.label_id.label)
-        print("ProcedureStatement: ", node.procedure_definition)
         type = "Void" if node.procedure_definition.result_spec == None else node.procedure_definition.result_spec.mode.type
         self.environment.add_root(node.label_id.label, type)
         self.lastProcAdded = node.label_id.label
@@ -339,12 +347,17 @@ class NodeVisitor(object):
 
     def visit_ProcedureDefinition(self, node):
         args = []
+
         if node.formal_parameter_list != None:
             for param in node.formal_parameter_list:
                 for identifier in param.identifier_list:
                     if(self.environment.peek().lookup(identifier.label) == None):
-                        self.environment.peek().add(identifier.label, param.parameter_spec.mode.type)
-                        args.append(param.parameter_spec.mode.type)
+                        if param.parameter_spec.mode.type != None:
+                            mode = param.parameter_spec.mode.type
+                        else:
+                            mode = expr_type_list[param.parameter_spec.mode.label].type
+                        self.environment.peek().add(identifier.label, mode)
+                        args.append(mode)
                     else:
                         print("Multiply defined variable: ", identifier.label)
 
@@ -385,6 +398,28 @@ class NodeVisitor(object):
         else:
             node.type = thenType
 
+    def visit_NewmodeStatement(self, node):
+        print("Newmode statement:")
+
+        for i in node.newmode_list:
+            self.visit(i)
+
+    def visit_ModeDefinition(self, node):
+        for i in node.identifier_list:
+            if i.label not in expr_type_list:
+                if (node.mode.__class__.__name__ == 'ArrayMode'):
+                    modeLabel = node.mode.element_mode.type
+                    mode = copy.deepcopy(expr_type_list[modeLabel])
+                    mode.type = '[' + mode.type + ']'
+                else:
+                    modeLabel = node.mode.label.type
+                    mode = expr_type_list[modeLabel]
+                self.environment.add_root(i.label, mode)
+                expr_type_list[i.label] = mode
+            else:
+                print('mode name already declared: ', i.label)
+                exit()
+        
     def visit(self,node):
         """
         Execute a method of the form visit_NodeName(node) where
@@ -416,7 +451,7 @@ class NodeVisitor(object):
         
     def __init__(self):
         self.environment = Environment()
-                
+
 class Program(AST):
     _fields = ['stmts']
 
@@ -501,11 +536,6 @@ class ConditionalExpression(AST):
 class ElsifExpression(AST):
     _fields = ['elsif_expression', 'boolean_expression', 'then_expression']
 
-#NOVAS CLASSES AQUI!
-'''
-class RelationalOperation(AST):
-    _fields = ['left', 'operator', 'right', 'type']
-'''
 class BinaryOperation(AST):
     _fields = ['left', 'operator', 'right', 'type']
 
@@ -515,7 +545,6 @@ class UnaryOperation(AST):
 class Identifier(AST):
     _fields = ['label', 'type']
 
-# cabo
 class Operand0(AST):
     _fields = ['operand0', 'operator1', 'operand1']
 
