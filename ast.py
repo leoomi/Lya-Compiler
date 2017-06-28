@@ -46,7 +46,7 @@ class Environment(object):
             "int": int_type,
             "char": char_type,
             "string": string_type,
-           "bool": bool_type
+            "bool": bool_type
         })
     def push(self, enclosure):
         self.stack.append(SymbolTable(decl=enclosure))
@@ -159,6 +159,7 @@ class NodeVisitor(object):
                         self.environment.peek().add(i.label, node.mode.type)
                 else:
                     print("Multiply defined variable: ", i.label)
+                    exit()
 
     def visit_SynonymDefinition(self, node):
         print("Synonym: ", node.identifier_list)
