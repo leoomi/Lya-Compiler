@@ -16,7 +16,7 @@ mem = 0
 #string constants
 H = []
 
-def vis(node):
+def codeGen(node):
     global refs, sp, d, code, labels, labelN, mem, H
     
     if isinstance(node, Program):
@@ -26,13 +26,13 @@ def vis(node):
         #refs[node.label_id.label] = 
 
     elif isinstance(node, IfAction):
-        vis(node.boolean_expression)
+        codeGen(node.boolean_expression)
         #jump to end of then actions
         code.append(('jof', labelN))
         labels.append(labelN)
         labelN += 1
         
-        vis(node.then_clause)
+        codeGen(node.then_clause)
         if node.else_clause != None:
             #jump to end of else clause after then clause
             code.append(('jmp', labelN))
@@ -41,7 +41,7 @@ def vis(node):
             labels.append(labelN)
             labelN += 1
             
-            vis(node.else_clause)
+            codeGen(node.else_clause)
             #label to else clause
             code.append(('lbl', labels.pop()))
         else:
@@ -56,7 +56,7 @@ def vis(node):
         labels.append(labelN)
         labelN += 1
         
-        vis(node.control_part)
+        codeGen(node.control_part)
         
         #Jump to end of while
         code.append(('jof', labelN))
@@ -64,7 +64,7 @@ def vis(node):
         labelN += 1
 
         for v in node.many_action_statement:
-            vis(v)
+            codeGen(v)
         
         #jump to while condition
         code.append(('jmp', labels[-2]))
@@ -82,9 +82,9 @@ def vis(node):
             val = getattr(node,field,None)            
             if (isinstance(val,list)):
                 for v in val:
-                    vis(v)
+                    codeGen(v)
             else:
-                vis(val)
+                codeGen(val)
         print("Returning...")
     else:
         print("Leaf node...")
@@ -218,8 +218,6 @@ def vis(node):
         elif node.assigning_operator.closed_dyadic_operator == '%':
             code.append(('mod',))
         #elif node.assigning_operator.closed_dyadic_operator == '&':
-
-
         
         
         if hasattr(node.location, "label"):
