@@ -19,7 +19,7 @@ class LyaVM():
             if P[i][0] == "lbl":
                 labels[P[i][1]] = i
         for i in range(0,len(P)):
-            if P[i][0] == "jmp" or P[i][0] == "jof":
+            if P[i][0] == "jmp" or P[i][0] == "jof" or P[i][0] == "cfu":
                 P[i] = (P[i][0], labels[P[i][1]])
         #Keep interpreting while instruction is not 'end'
         while (P[pc][0] != 'end'):
