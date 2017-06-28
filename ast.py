@@ -127,6 +127,7 @@ class NodeVisitor(object):
         print("Identifier: ", node.label)
         if(self.environment.lookup(node.label) == None):
             print("Variable not declared: ", node.label)
+            exit()
         else:
             node.type = self.environment.lookup(node.label)
 
@@ -144,6 +145,7 @@ class NodeVisitor(object):
             else:
                 print("Conflicting types in declaration: ", node.initialization.type, node.mode.type)
                 error = True
+                exit()
 
         if(not error):
             for i in node.identifier_list:
@@ -170,6 +172,7 @@ class NodeVisitor(object):
                 init = expr_type_list[node.initialization.type].default
             else:
                 print("Conflicting types in synonym: ", node.initialization, node.mode.type)
+                exit()
                 error = True
 
         if(not error):
@@ -178,6 +181,7 @@ class NodeVisitor(object):
                     self.environment.peek().add(i.label, node.mode.type)
                 else:
                     print("Multiply defined variable: ", i.label)
+                    exit()
         
                     
     def visit_AssignmentAction(self, node):
@@ -216,6 +220,7 @@ class NodeVisitor(object):
         #check if label and expression share same type
         if(location != exp):
             print("Conflicting types for assignment action: ", label, location, exp)
+            exit()
         else:
             if(node.assigning_operator.closed_dyadic_operator != None):
                 expr_type = None
@@ -226,6 +231,7 @@ class NodeVisitor(object):
                 if(expr_type != None):
                     if(expr_type.type != location or expr_type.type != exp):
                         print("Conflicting types for assignment action: ", label, location, expr_type.type, exp)
+                        exit()
            
     def visit_UnaryOperation(self, node):
         self.visit(node.operand)
@@ -243,6 +249,7 @@ class NodeVisitor(object):
 
         if (expr_type.type != exp):
             print("Conflicting type for Unary Operation: ", exp, expr_type.type)
+            exit()
         
         node.type = expr_type.type;
 
@@ -273,6 +280,7 @@ class NodeVisitor(object):
 
         if not argList == self.environment.functions[(node.id.label)].args:
             print("conflicting types for procedure call: ", argList, ' ',self.environment.functions[(node.id.label)].args)
+            exit()
 
         node.type = self.environment.lookup(node.id.label)
          
@@ -360,6 +368,7 @@ class NodeVisitor(object):
                         args.append(mode)
                     else:
                         print("Multiply defined variable: ", identifier.label)
+                        exit()
 
         self.environment.functions[self.lastProcAdded] = FunctionArgs(args)
         
@@ -378,6 +387,7 @@ class NodeVisitor(object):
                         print(exp, func)
                         if(exp != func):
                             print("Conflicting return type: ", exp, func)
+                            exit()
 
                 self.visit(statement)
 
@@ -395,6 +405,7 @@ class NodeVisitor(object):
 
         if (thenType != elsifType or thenType != elseType or elsifType != elseType):
             print("Conflicting types in conditional expression (ternaryop): ", thenType, elsifType, elseType)
+            exit()
         else:
             node.type = thenType
 
