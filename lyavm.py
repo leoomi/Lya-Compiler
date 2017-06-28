@@ -23,6 +23,7 @@ class LyaVM():
                 P[i] = (P[i][0], labels[P[i][1]])
         #Keep interpreting while instruction is not 'end'
         while (P[pc][0] != 'end'):
+            print(P, P[pc], pc);
             if (P[pc][0] == 'ldc'):
                 sp = sp + 1
                 M[sp] = P[pc][1]
@@ -157,3 +158,6 @@ class LyaVM():
             
             #increase program counter 
             pc = pc + 1
+
+
+            print(P, P[pc], pc);
