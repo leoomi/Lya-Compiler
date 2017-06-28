@@ -735,6 +735,7 @@ def p_result_attribute(p):
 
 def p_error(p):
     print("Syntax error in input!")
+    exit()
 
 # Build the parser
 parser = yacc.yacc()

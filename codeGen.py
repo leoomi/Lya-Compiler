@@ -62,9 +62,9 @@ def codeGen(node):
         code.append(('jof', labelN))
         labels.append(labelN)
         labelN += 1
-
-        for v in node.many_action_statement:
-            codeGen(v)
+        if node.many_action_statement != None:
+            for v in node.many_action_statement:
+                codeGen(v)
         
         #jump to while condition
         code.append(('jmp', labels[-2]))
@@ -74,20 +74,19 @@ def codeGen(node):
         return
 
 
-    print(node)
     #visit recursively (DFS)
     if hasattr(node,"_fields"):
         for field in getattr(node,"_fields"):
-            print (field)
+            #print (field)
             val = getattr(node,field,None)            
             if (isinstance(val,list)):
                 for v in val:
                     codeGen(v)
             else:
                 codeGen(val)
-        print("Returning...")
-    else:
-        print("Leaf node...")
+        #print("Returning...")
+    #else:
+        #print("Leaf node...")
 
     
     if isinstance(node, Program):

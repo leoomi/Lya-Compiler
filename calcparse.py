@@ -5,10 +5,10 @@ from lyavm import *
 try:
     s = input('calc > ')
 except EOFError:
-    break
-if not s: continue
+    exit()
+
 result = parser.parse(s)
-#visit = visitor.visit(result)
+visit = visitor.visit(result)
 
 #generate the code
 codeGen(result)
