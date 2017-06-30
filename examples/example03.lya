@@ -14,4 +14,4 @@ f: proc (n int, k int loc) returns (int);
   fi;
 end;
 
-print(f(3,m), m);
+f(3,m);

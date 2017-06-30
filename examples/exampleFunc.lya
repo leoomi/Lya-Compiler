@@ -1,0 +1,15 @@
+fat1: proc();
+dcl x int;
+x = 1;
+print(x);
+end;
+
+fat2: proc(a,b int);
+dcl x int;
+x = a + b;
+print(x);
+end;
+
+
+fat1();
+fat2(2, 10);

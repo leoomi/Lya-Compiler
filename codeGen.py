@@ -1,19 +1,19 @@
 from lyaparser import *
 
 #reference of nodes to stack
-refs = {}
+refs = [{}]
 #stack pointer
-sp = 0
+sp = [0]
 #index for display
 dCount = 1
 d = [0]
 #stack for labels
 labels = []
-labelN = 1
+labelN = 0
 #generated code
 code = []
 #allocated mem
-mem = 0
+mem = [0]
 #string constants
 H = []
 
@@ -30,11 +30,26 @@ def codeGen(node):
         labelN += 1
         #Label to beginning of the procedure
         code.append(('lbl', labelN))
-        refs[node.label_id.label] = labelN
+        refs[d[0]][node.label_id.label] = labelN
         labelN += 1
+
         code.append(('enf', dCount))
+        refs.append({})
+        mem.append(0)
+        sp.append(0)
         d.append(dCount)
         dCount += 1
+
+    elif isinstance(node, ProcedureDefinition):
+        count = -3
+        if node.formal_parameter_list != None:
+            for i in node.formal_parameter_list:
+                for j in i.identifier_list:
+                    refs[-1][j.label] = count
+                    count -= 1
+
+        refs[-1]["ret"] = count
+
 
     elif isinstance(node, IfAction):
         codeGen(node.boolean_expression)
@@ -84,24 +99,24 @@ def codeGen(node):
         #Did all visiting already, no need to visit recursively again    
         return
 
-    print(node)
+    #print(node)
     #visit recursively (DFS)
     if hasattr(node,"_fields"):
         for field in getattr(node,"_fields"):
-            print (field)
+            #print (field)
             val = getattr(node,field,None)            
             if (isinstance(val,list)):
                 for v in val:
                     codeGen(v)
             else:
                 codeGen(val)
-        print("Returning...")
-    else:
-        print("Leaf node...")
+        #print("Returning...")
+    #else:
+        #print("Leaf node...")
 
     
     if isinstance(node, Program):
-        code.append(('dlc', mem))
+        code.append(('dlc', mem.pop()))
         code.append(('end',))
 
     elif isinstance(node, Declaration):
@@ -114,17 +129,18 @@ def codeGen(node):
             
 
         code.append(('alc', varSize * len(node.identifier_list)))
-        mem += varSize * len(node.identifier_list)
+        mem[-1] += varSize * len(node.identifier_list)
+        
 
         #add reference to stack
         for i in node.identifier_list:
-            refs[i.label] = sp
-            sp += varSize
+            refs[d[-1]][i.label] = sp[-1]
+            sp[-1] += varSize
         
         if isinstance(node.initialization, Constant):
             for i in node.identifier_list:
                 code.append(('ldc', node.initialization.value))
-                code.append(('stv', d[-1], refs[i.label]))
+                code.append(('stv', d[-1], refs[d[-1]][i.label]))
 
     elif isinstance(node, BuiltinCall):
         if node.builtin_name == "read":
@@ -132,7 +148,7 @@ def codeGen(node):
                 #CHECK IF TYPE IS INT
                 if True:
                     code.append(('rdv',))
-                    code.append(('stv', d[-1], refs[i.label]))
+                    code.append(('stv', d[-1], refs[d[-1]][i.label]))
                 #CHECK IF TYPE IS STRING
                 else:
                     code.append(('ldr', 'ALTERAR', 'ALTERAR'))
@@ -147,26 +163,27 @@ def codeGen(node):
                         code.append(('ldc', i.value))
                         code.append(('prv', 0))
                 #Check variables types
-                elif True:
+                elif isinstance(i, Identifier):
+                    code.append(('ldv', d[-1], refs[d[-1]][i.label]))
                     code.append(('prv', 0))
                 else:
-                    code.append(('prv', 1))
+                    code.append(('prv', 0))
                 
-                sp -= 1
+                sp[-1] -= 1
     
     elif isinstance(node, BinaryOperation):
         if hasattr(node.left, "label"):
-            code.append(('ldv', d[-1], refs[node.left.label]))
-            sp+=1
+            code.append(('ldv', d[-1], refs[d[-1]][node.left.label]))
+            sp[-1]+=1
         elif hasattr(node.left, "value"):
             code.append(('ldc', node.left.value))
-            sp+=1
+            sp[-1]+=1
         if hasattr(node.right, "label"):
-            code.append(('ldv', d[-1], refs[node.right.label]))
-            sp+=1
+            code.append(('ldv', d[-1], refs[d[-1]][node.right.label]))
+            sp[-1]+=1
         elif hasattr(node.right, "value"):
             code.append(('ldc', node.right.value))
-            sp+=1
+            sp[-1]+=1
 
         if node.operator == "*":
             code.append(('mul',))
@@ -194,15 +211,15 @@ def codeGen(node):
             code.append(('equ',))
         elif node.operator == "!=":
             code.append(('neq',))
-        sp-=1
+        sp[-1]-=1
 
     elif isinstance(node, UnaryOperation):
         if hasattr(node.operand, "label"):
-            code.append(('ldv', d[-1], refs[node.operand.label]))
-            sp+=1
+            code.append(('ldv', d[-1], refs[d[-1]][node.operand.label]))
+            sp[-1]+=1
         elif hasattr(node.operand, "value"):
             code.append(('ldc', node.operand.value))
-            sp+=1
+            sp[-1]+=1
 
         if node.operator == "!":
             code.append(("not",))
@@ -211,11 +228,11 @@ def codeGen(node):
     
     elif isinstance(node, AssignmentAction):
         if node.assigning_operator.closed_dyadic_operator != None:
-            code.append(('ldv', d[-1], refs[node.location.label]))
+            code.append(('ldv', d[-1], refs[d[-1]][node.location.label]))
 
         if hasattr(node.expression, "value"):
             code.append(('ldc', node.expression.value))
-            sp+=1
+            sp[-1]+=1
 
         if node.assigning_operator.closed_dyadic_operator == '*':
             code.append(('mul',))
@@ -231,23 +248,40 @@ def codeGen(node):
         
         
         if hasattr(node.location, "label"):
-            code.append(('stv', d[-1], refs[node.location.label]))
-            sp-=1
+            code.append(('stv', d[-1], refs[d[-1]][node.location.label]))
+            sp[-1]-=1
         #DO ELSE IF IT ISNT AN IDENTIFIER (ARRAY, PERHAPS?)
                     
     elif isinstance(node, ProcedureStatement):
-        code.append(('dlc', mem))
-        code.append(('ret', d.pop(), len(node.procedure_definition.formal_parameter_list)))
+        code.append(('dlc', mem.pop()))
+        if node.procedure_definition.formal_parameter_list != None:
+            count = 0
+            for i in node.procedure_definition.formal_parameter_list:
+                count += len(i.identifier_list)
+            code.append(('ret', d.pop(), count))
+        else:
+            code.append(('ret', d.pop(), 0))
+            
         code.append(('lbl',labels.pop()))
+        sp.pop()
 
     elif isinstance(node, ProcedureCall):
         code.append(('alc', 1));
+    
         if node.parameter_list != None:
             for i in node.parameter_list:
                 code.append(('alc', 1))
                 if isinstance(i, Constant):
                     code.append(('ldc', i.value))
-                else:
-                    code.append(('ldv', d[-1], refs[i.label]))
-                
-        code.append(('cfu', refs[node.id.label]))
+                elif isinstance(i, Identifier):
+                    code.append(('ldv', d[-1], refs[d[-1]][i.label]))
+        #print(refs, mem, d)
+        code.append(('cfu', refs[d[0]][node.id.label]))
+
+    elif isinstance(node, ReturnAction):
+        if isinstance(node.value, Constant):
+            code.append(('ldc', node.value.value))
+        code.append(('stv', d[-1], refs[d[-1]]["ret"]))
+#        code.append(('dlc', sp[-1] - 2))
+        code.append(('ret', d[-1], -refs[d[-1]]["ret"]-3))
+    

@@ -265,19 +265,20 @@ class NodeVisitor(object):
             exit()
             
         argList = []
- 
-        for param in node.parameter_list:
-            if param.__class__.__name__ == 'Identifier':
-                print('ProcCall param: ', self.environment.lookup(param.label))
-                argList.append(self.environment.lookup(param.label))
-            else:
-                print('ProcCall param: ')
-                self.visit(param)
-                argList.append(param.type)
+
+        if node.parameter_list != None:
+            for param in node.parameter_list:
+                if param.__class__.__name__ == 'Identifier':
+                    print('ProcCall param: ', self.environment.lookup(param.label))
+                    argList.append(self.environment.lookup(param.label))
+                else:
+                    print('ProcCall param: ')
+                    self.visit(param)
+                    argList.append(param.type)
             
-        if not len(node.parameter_list) == len(self.environment.functions[(node.id.label)].args):
-            print("Wrong number of arguments for function: ", node.id.label)
-            exit()
+            if not len(node.parameter_list) == len(self.environment.functions[(node.id.label)].args):
+                print("Wrong number of arguments for function: ", node.id.label)
+                exit()
 
         if not argList == self.environment.functions[(node.id.label)].args:
             print("conflicting types for procedure call: ", argList, ' ',self.environment.functions[(node.id.label)].args)

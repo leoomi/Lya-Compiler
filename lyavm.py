@@ -86,14 +86,16 @@ class LyaVM():
                 continue
             elif (P[pc][0] == 'alc'):
                 sp=sp+P[pc][1]
-            elif (P[pc][0] == 'dcl'):
+            elif (P[pc][0] == 'dlc'):
                 sp=sp-P[pc][1]
             elif (P[pc][0] == 'cfu'):
                 sp=sp+1; M[sp]=pc+1; pc=P[pc][1]; continue
             elif (P[pc][0] == 'enf'):
                 sp=sp+1; M[sp]=D[P[pc][1]]; D[P[pc][1]]=sp+1
             elif (P[pc][0] == 'ret'):
-                D[P[pc][1]]=M[sp]; pc=M[sp-1]; sp=sp-(P[pc][2]+2); continue
+                D[P[pc][1]]=M[sp]; 
+                n = P[pc][2];
+                pc=M[sp-1]; sp=sp-(n+2); continue
             elif (P[pc][0] == 'idx'):
                 M[sp-1]=M[sp-1] + M[sp] * P[pc][1]
                 sp=sp-1
